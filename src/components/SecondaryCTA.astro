@@ -1,0 +1,25 @@
+---
+import TrustLine from './TrustLine.astro';
+
+interface Props {
+  heading: string;
+  body: string;
+  ctaLabel: string;
+}
+const { heading, body, ctaLabel } = Astro.props;
+---
+
+<div class="scta-wrap">
+  <div class="scta">
+    <h2>{heading}</h2>
+    <p class="section-sub" style="margin:0 auto 28px">{body}</p>
+    <button class="btn" type="button" data-open-popup>{ctaLabel}</button>
+    <TrustLine center />
+  </div>
+</div>
+
+<style>
+  .scta-wrap { background: var(--bg); border-top: 1px solid var(--border); }
+  .scta { text-align: center; padding: 76px var(--pad); max-width: 42rem; margin: 0 auto; }
+  .scta .trust-line { margin-top: 14px; }
+</style>

@@ -1,0 +1,30 @@
+<div class="sbar">
+  <div class="sbar-in">
+    <div class="st"><div class="sn"><em>14</em>s</div><div class="sl">Avg. response time</div></div>
+    <div class="st"><div class="sn">1,497</div><div class="sl">Leads handled</div></div>
+    <div class="st"><div class="sn">120</div><div class="sl">Test drives booked</div></div>
+    <div class="st"><div class="sn">82</div><div class="sl">Cars sold</div></div>
+    <div class="st"><div class="sn">10,073</div><div class="sl">AI messages sent</div></div>
+  </div>
+</div>
+
+<style>
+  .sbar {
+    background: var(--bg-3);
+    border-bottom: 1px solid var(--border);
+    padding: 28px var(--pad);
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+  }
+  .sbar-in { display: flex; max-width: 1140px; width: 100%; }
+  .st { flex: 1; text-align: center; padding: 0 28px; border-right: 1px solid var(--border); }
+  .st:last-child { border-right: none; }
+  .sn { font-family: var(--font-head); font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); font-weight: 800; color: #fff; letter-spacing: -0.03em; line-height: 1; }
+  .sn em { color: var(--accent); font-style: normal; }
+  .sl { font-size: 0.72rem; color: var(--muted); margin-top: 5px; }
+
+  @media (max-width: 640px) {
+    .sbar { padding: 20px; }
+  }
+</style>

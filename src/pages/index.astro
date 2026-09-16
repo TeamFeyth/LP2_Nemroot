@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Topbar from '../components/Topbar.astro';
+import Hero from '../components/Hero.astro';
+import CaseStudy from '../components/CaseStudy.astro';
+import StatsBar from '../components/StatsBar.astro';
+import Proof from '../components/Proof.astro';
+import Problem from '../components/Problem.astro';
+import SolutionBridge from '../components/SolutionBridge.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Features from '../components/Features.astro';
+import Testimonials from '../components/Testimonials.astro';
+import FAQObjections from '../components/FAQObjections.astro';
+import SecondaryCTA from '../components/SecondaryCTA.astro';
+import BottomForm from '../components/BottomForm.astro';
+import Footer from '../components/Footer.astro';
+import Popup from '../components/Popup.astro';
+
+const qa = [
+  {
+    q: "What makes Nemroot different from what I've already tried?",
+    a: 'Kayalar Motors ran into this exact problem before switching to Nemroot. The numbers above are from their lot. Check them against your own before you decide anything.',
+  },
+  {
+    q: 'How long does it actually take to get up and running?',
+    a: "24 to 48 hours. That's a contract commitment, not a sales estimate. Nothing changes about how your floor runs. Only what happens to a lead after it comes in.",
+  },
+  {
+    q: "What happens if it doesn't work for my dealership?",
+    a: "12-month agreement, 30-day full refund. If it isn't working in the first month, you get your money back and you're done. No contract games, no black box.",
+  },
+];
+---
+
+<BaseLayout
+  title="Nemroot — Proven at a Real Dealership."
+  description="Proven at a real Houston dealership before anywhere else. One inbox, 14-second response, automatic follow-up. Live in 24 to 48 hours. 30-day full refund."
+>
+  <Topbar />
+
+  <Hero
+    badge="Proven at a Real Dealership."
+    headline="This Houston Dealership Was Just as Frustrated With Slow Lead Follow-Up as You Are."
+    subheading="Kayalar Motors watched leads go cold, follow-ups get missed, and deals walk out the door. Then they put Nemroot to work: one inbox, one number, an AI that answers in 14 seconds and doesn't stop until the appointment is on the calendar."
+    ctaLabel="See How It Works"
+  />
+
+  <CaseStudy />
+
+  <StatsBar />
+
+  <Proof
+    eyebrow="Real Numbers. One Dealership."
+    heading="These Are the Last 30 Days at Kayalar Motors."
+    body="Not an average across accounts. These are the real numbers from Kayalar Motors, a Houston dealership running Nemroot."
+  />
+
+  <Problem
+    eyebrow="Sound Familiar"
+    heading="This Dealership Had the Same 750 Leads You Do."
+    before={[
+      '800 leads came in. 50 closed. Roughly 750 never got a real follow-up — not because the leads were bad, but because the response was slow and the follow-up never happened.',
+    ]}
+    statNum="750"
+    statLabel="leads that never got a real follow-up"
+    after={[
+      "That's what Kayalar Motors was looking at on their own lot before Nemroot. <strong>They didn't read about this problem in a case study. They lived it.</strong>",
+      "That's the only problem Nemroot exists to fix. And it's exactly what got fixed at Kayalar Motors.",
+    ]}
+  />
+
+  <SolutionBridge
+    eyebrow="One Number. One Inbox."
+    heading="Every lead from every channel, in one place."
+    copy="Every lead from every channel (website, SMS, Facebook, email, phone) in one place. The AI picks up in 14 seconds, knows what's on your lot right now, and keeps following up until the customer books a test drive. Your team takes it from there."
+    tagline="Built the same way it runs on Kayalar Motors today."
+  />
+
+  <HowItWorks />
+
+  <Features
+    eyebrow="Why Dealers Choose Nemroot"
+    heading="Every feature built on a real lot, for a real lot."
+    subcopy="These aren't features a software team dreamed up. They're the exact tools Kayalar Motors needed to stop losing leads on their own floor."
+  />
+
+  <Testimonials
+    eyebrow="Dealers Who Made the Switch"
+    heading="They checked the numbers. Then they switched."
+  />
+
+  <FAQObjections qa={qa} />
+
+  <SecondaryCTA
+    heading="The Dealer Who Built This Was Losing the Same Leads You Are."
+    body="He fixed it. If you start now, it can run on your lot in the next 24 to 48 hours."
+    ctaLabel="See How It Works"
+  />
+
+  <BottomForm />
+
+  <Footer />
+
+  <Popup progressive={false} />
+
+  <script>
+    import '../scripts/interactions.js';
+  </script>
+</BaseLayout>

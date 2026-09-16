@@ -1,0 +1,55 @@
+---
+// Same three trust items on both landing pages. Rendered with inline SVG
+// icons (matching the lp2 draft) instead of emoji, so they render
+// consistently across every OS/browser instead of relying on the
+// system emoji font.
+---
+
+<div class="topbar">
+  <div class="ti">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    30-day money-back guarantee
+  </div>
+  <div class="ti">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    Live in 24 to 48 hours
+  </div>
+  <div class="ti">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+    Save more on annual plans
+  </div>
+</div>
+
+<style>
+  .topbar {
+    background: var(--accent-glow);
+    border-bottom: 1px solid var(--accent-border);
+    padding: 9px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  .ti {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.72rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .ti svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  @media (max-width: 640px) {
+    .topbar { gap: 14px; padding: 8px 16px; }
+  }
+</style>

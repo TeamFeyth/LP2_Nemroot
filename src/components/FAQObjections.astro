@@ -1,0 +1,36 @@
+---
+interface QA { q: string; a: string }
+interface Props { qa: QA[] }
+const { qa } = Astro.props;
+---
+
+<div class="section-alt">
+  <div class="wrap" style="text-align:center">
+    <div class="eyebrow">Let's Be Straight With You</div>
+    <h2>Good questions. Honest answers.</h2>
+    <div class="objs">
+      {qa.map((item) => (
+        <div class="card obj">
+          <div class="oq">{item.q}</div>
+          <p class="oa">{item.a}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .wrap { padding: 76px var(--pad); max-width: var(--container); margin: 0 auto; }
+  .objs {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    margin-top: 38px;
+    max-width: 46rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .obj { text-align: left; padding: 22px 26px; }
+  .oq { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .oa { font-size: 0.85rem; color: var(--muted-2); line-height: 1.7; max-width: none; }
+</style>

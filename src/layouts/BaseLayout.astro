@@ -1,0 +1,95 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+
+  <!-- Open Graph / social preview (uses the same title & description above) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta name="twitter:card" content="summary" />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!--
+    ================================================================
+    TRACKING & ANALYTICS — see Section 4 of the build spec
+    Placement below matches the spec's "Target Code Placement" column.
+    Fields the client left blank are stubbed here so IDs can be
+    dropped straight in later without hunting for where they go.
+    ================================================================
+  -->
+
+  <!-- Google Tag Manager (head) — GTM-XXXXXXX not provided yet
+  <script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+  -->
+
+  <!-- Google Analytics (GA4) — G-XXXXXXXXXX not provided yet
+  <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script is:inline>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
+  -->
+
+  <!-- CallRail Dynamic Number Insertion — swap tracking company/script id in when provided
+  <script is:inline id="callrail" src="//cdn.callrail.com/companies/COMPANY_ID/SCRIPT_ID/12/swap.js" async></script>
+  -->
+
+  <!-- Google Search Console verification (HTML tag method) — alternative: DNS TXT record
+  <meta name="google-site-verification" content="REPLACE_ME" />
+  -->
+
+  <!-- Meta Pixel Code -->
+  <script is:inline>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '2302599970275699');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=2302599970275699&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
+
+  <!--
+    NOTE ON THE META CONVERSIONS API (CAPI):
+    The build spec included a CAPI access token. That token is a
+    server-side secret — it must never be shipped in client/static
+    code (this repo is fully static and this file is public in the
+    browser). It has intentionally NOT been placed anywhere in this
+    project. When the CRM integration is built, store it as an
+    encrypted Cloudflare Pages environment variable and call the
+    Conversions API from a server-side function, never from the
+    browser. See the README for details.
+  -->
+</head>
+<body>
+  <!-- Google Tag Manager (noscript, opening body) -->
+  <!--
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  -->
+  <slot />
+</body>
+</html>

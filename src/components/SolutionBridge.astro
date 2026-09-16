@@ -1,0 +1,25 @@
+---
+interface Props {
+  eyebrow: string;
+  heading: string;
+  copy: string;
+  tagline?: string;
+}
+
+const { eyebrow, heading, copy, tagline } = Astro.props;
+---
+
+<div class="bridge-wrap">
+  <div class="bridge">
+    <div class="eyebrow">{eyebrow}</div>
+    <h2>{heading}</h2>
+    <p class="section-sub" style="max-width:none;margin:0 auto 20px">{copy}</p>
+    {tagline && <p class="tagline">{tagline}</p>}
+  </div>
+</div>
+
+<style>
+  .bridge-wrap { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .bridge { max-width: 45rem; margin: 0 auto; padding: 76px var(--pad); text-align: center; }
+  .tagline { font-size: 0.95rem; color: var(--accent); font-weight: 600; }
+</style>

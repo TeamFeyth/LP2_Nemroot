@@ -1,0 +1,60 @@
+---
+interface Props {
+  eyebrow: string;
+  heading: string;
+  body: string;
+}
+const { eyebrow, heading, body } = Astro.props;
+
+const stats = [
+  { num: '14s', label: 'Avg. response time vs. 2+ hr industry avg.' },
+  { num: '1,497', label: 'Leads handled' },
+  { num: '10,073', label: 'AI messages sent, zero manual replies' },
+  { num: '120', label: 'Test drives booked' },
+  { num: '82', label: 'Cars sold' },
+  { num: '4.3★', label: 'Google — 592 reviews, +121 since Nemroot' },
+];
+---
+
+<div class="section-alt">
+  <div class="proof-layout">
+    <div>
+      <div class="eyebrow">{eyebrow}</div>
+      <h2>{heading}</h2>
+      <p class="section-sub" style="margin-bottom:16px">{body}</p>
+      <div class="disc">Results from Kayalar Motors over a 30-day period. Individual results vary.</div>
+    </div>
+    <div class="pgrid">
+      {stats.map((s) => (
+        <div class="pc">
+          <div class="pnum">{s.num}</div>
+          <div class="plbl">{s.label}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .proof-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    padding: 76px var(--pad);
+    max-width: var(--container);
+    margin: 0 auto;
+  }
+  .pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+  .pc { background: var(--card-2); border: 1px solid var(--border-2); border-radius: var(--radius); padding: 18px 22px; }
+  .pnum { font-family: var(--font-head); font-size: 1.7rem; font-weight: 800; color: var(--accent); letter-spacing: -0.03em; }
+  .plbl { font-size: 0.72rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .disc { font-size: 0.68rem; color: rgba(110, 132, 158, 0.5); margin-top: 20px; line-height: 1.6; }
+
+  @media (max-width: 960px) {
+    .proof-layout { grid-template-columns: 1fr; gap: 36px; }
+  }
+  @media (max-width: 640px) {
+    .pgrid { grid-template-columns: 1fr 1fr; }
+  }
+</style>

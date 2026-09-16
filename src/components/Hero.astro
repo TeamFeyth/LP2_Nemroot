@@ -1,0 +1,78 @@
+---
+import LeadForm from './LeadForm.astro';
+import TrustLine from './TrustLine.astro';
+
+interface Props {
+  badge: string;
+  headline: string;
+  subheading: string;
+  ctaLabel: string;
+}
+
+const { badge, headline, subheading, ctaLabel } = Astro.props;
+---
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="badge"><span class="badge-dot"></span>{badge}</div>
+      <h1>{headline}</h1>
+      <p class="hero-sub">{subheading}</p>
+      <button class="btn" type="button" data-open-popup>{ctaLabel}</button>
+      <TrustLine />
+    </div>
+
+    <div class="glass-card fc">
+      <LeadForm variant="hero" />
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    padding: 76px var(--pad) 68px;
+  }
+  /* ambient depth: soft blue glow + a faint vignette toward the edges */
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -220px;
+    right: -160px;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(0, 144, 224, 0.10) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.35) 100%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    max-width: 1140px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 60px;
+    align-items: start;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-sub {
+    font-size: 1rem;
+    color: var(--muted-2);
+    line-height: 1.75;
+    margin-bottom: 30px;
+    max-width: 30rem;
+  }
+  .fc { padding: 26px; }
+  @media (max-width: 960px) {
+    .hero-inner { grid-template-columns: 1fr; }
+  }
+</style>

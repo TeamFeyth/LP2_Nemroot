@@ -1,0 +1,60 @@
+---
+import LeadForm from './LeadForm.astro';
+
+interface Props {
+  progressive?: boolean;
+}
+const { progressive = false } = Astro.props;
+---
+
+<div class="pop" id="popup-overlay" data-popup-overlay>
+  <div class="pbox glass-card" role="dialog" aria-modal="true" aria-label="Get a live demo">
+    <button class="px" type="button" data-close-popup aria-label="Close dialog">✕</button>
+    <LeadForm variant="popup" progressive={progressive} />
+    <div class="pnr" data-close-popup role="button" tabindex="0">Not right now</div>
+  </div>
+</div>
+
+<style>
+  .pop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+    padding: 20px;
+  }
+  .pop.open { display: flex; }
+  .pbox {
+    width: 420px;
+    max-width: 100%;
+    padding: 32px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .px {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+  }
+  .px:hover { color: #fff; }
+  .pnr {
+    text-align: center;
+    margin-top: 13px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .pnr:hover { color: var(--muted-2); }
+</style>

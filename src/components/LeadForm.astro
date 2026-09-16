@@ -1,0 +1,140 @@
+---
+interface Props {
+  variant: 'hero' | 'bottom' | 'popup';
+  heading?: string;
+  subheading?: string;
+  submitLabel?: string;
+  progressive?: boolean;
+}
+
+const {
+  variant,
+  heading = 'Get a Live Demo',
+  subheading = 'Three questions for a personalized demo.',
+  submitLabel = 'Get My Demo',
+  progressive = false,
+} = Astro.props;
+
+const id = (suffix: string) => `${variant}-${suffix}`;
+---
+
+<form
+  class="lead-form"
+  id={id('form')}
+  data-lead-form
+  data-form-source={variant}
+  data-progressive={progressive ? 'true' : 'false'}
+  novalidate
+>
+  {heading && <div class="fc-h">{heading}</div>}
+  {subheading && <p class="fc-s">{subheading}</p>}
+
+  <div class="lead-form-fields">
+    <!-- STEP 1 — always visible -->
+    <div data-reveal-step="1">
+      <fieldset class="field-group">
+        <legend class="field-label">How many seats do you need?</legend>
+        <div class="radio-group" role="radiogroup" aria-label="How many seats do you need?">
+          <span class="radio-opt">
+            <input class="radio-input" type="radio" id={id('seats-1')} name={`${variant}_seats`} value="1-5" data-progressive-group={id('step2')} />
+            <label class="radio-pill" for={id('seats-1')}>1–5</label>
+          </span>
+          <span class="radio-opt">
+            <input class="radio-input" type="radio" id={id('seats-2')} name={`${variant}_seats`} value="5-10" data-progressive-group={id('step2')} />
+            <label class="radio-pill" for={id('seats-2')}>5–10</label>
+          </span>
+          <span class="radio-opt">
+            <input class="radio-input" type="radio" id={id('seats-3')} name={`${variant}_seats`} value="10+" data-progressive-group={id('step2')} />
+            <label class="radio-pill" for={id('seats-3')}>10+</label>
+          </span>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- STEP 2 — leads/month + ad platforms -->
+    <div data-reveal-step="2" class={progressive ? 'reveal-hidden' : ''} id={id('step2')}>
+      <fieldset class="field-group">
+        <legend class="field-label">How many leads do you get a month?</legend>
+        <div class="radio-group" role="radiogroup" aria-label="How many leads do you get a month?">
+          <span class="radio-opt">
+            <input class="radio-input" type="radio" id={id('leads-1')} name={`${variant}_leads`} value="100" data-progressive-group={id('step3')} />
+            <label class="radio-pill" for={id('leads-1')}>100</label>
+          </span>
+          <span class="radio-opt">
+            <input class="radio-input" type="radio" id={id('leads-2')} name={`${variant}_leads`} value="500" data-progressive-group={id('step3')} />
+            <label class="radio-pill" for={id('leads-2')}>500</label>
+          </span>
+          <span class="radio-opt">
+            <input class="radio-input" type="radio" id={id('leads-3')} name={`${variant}_leads`} value="1000+" data-progressive-group={id('step3')} />
+            <label class="radio-pill" for={id('leads-3')}>1,000+</label>
+          </span>
+        </div>
+      </fieldset>
+      <fieldset class="field-group">
+        <legend class="field-label">How many ad platforms are you running?</legend>
+        <div class="radio-group" role="radiogroup" aria-label="How many ad platforms are you running?">
+          <span class="radio-opt">
+            <input class="radio-input" type="radio" id={id('plat-1')} name={`${variant}_platforms`} value="1-2" data-progressive-group={id('step3')} />
+            <label class="radio-pill" for={id('plat-1')}>1–2</label>
+          </span>
+          <span class="radio-opt">
+            <input class="radio-input" type="radio" id={id('plat-2')} name={`${variant}_platforms`} value="2+" data-progressive-group={id('step3')} />
+            <label class="radio-pill" for={id('plat-2')}>More than 2</label>
+          </span>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- STEP 3 — contact details + consent + submit -->
+    <div data-reveal-step="3" class={progressive ? 'reveal-hidden' : ''} id={id('step3')}>
+      <label class="sr-only" for={id('first-name')}>First name</label>
+      <input class="field-input" type="text" id={id('first-name')} name="first_name" placeholder="First name" style="margin-top:6px" autocomplete="given-name" />
+
+      <label class="sr-only" for={id('phone')}>Phone number</label>
+      <input class="field-input" type="tel" id={id('phone')} name="phone" placeholder="Phone number" autocomplete="tel" inputmode="tel" data-phone-input />
+
+      <label class="sr-only" for={id('dealership')}>Dealership name</label>
+      <input class="field-input" type="text" id={id('dealership')} name="dealership_name" placeholder="Dealership name" autocomplete="organization" />
+
+      <p class="form-error-text" data-form-error>Please fill in every field above so we can set up your demo.</p>
+
+      <div class="consent-row">
+        <input type="checkbox" id={id('consent')} name="sms_consent" required />
+        <label for={id('consent')}>
+          By checking this box, I agree to receive calls and texts from Nemroot at the number provided, including by automated means, about my demo request. Msg &amp; data rates may apply. Consent isn't a condition of purchase.
+        </label>
+      </div>
+
+      <!-- hidden fields — populated on load, see interactions.js -->
+      <input type="hidden" name="form_source" value={variant} />
+      <input type="hidden" name="page_url" data-hidden-field="page_url" />
+      <input type="hidden" name="timestamp" data-hidden-field="timestamp" />
+      <input type="hidden" name="utm_source" data-hidden-field="utm_source" />
+      <input type="hidden" name="utm_medium" data-hidden-field="utm_medium" />
+      <input type="hidden" name="utm_campaign" data-hidden-field="utm_campaign" />
+      <input type="hidden" name="utm_content" data-hidden-field="utm_content" />
+      <input type="hidden" name="utm_term" data-hidden-field="utm_term" />
+
+      <button class="field-submit" type="submit">{submitLabel}</button>
+    </div>
+  </div>
+
+  <div class="form-success" data-form-success>
+    <h3>You're on the list.</h3>
+    <p>Someone from the Nemroot team will call or text you within one business day to set up your live demo.</p>
+  </div>
+</form>
+
+<style>
+  .field-group { border: none; margin-bottom: 0; }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .reveal-hidden { display: none; }
+  [data-reveal-step="2"], [data-reveal-step="3"] { margin-top: -6px; }
+</style>

@@ -1,0 +1,41 @@
+<footer>
+  <div class="logo"><div class="lm">N</div>Nemroot</div>
+  <div class="flinks">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Service</a>
+    <a href="#">Sitemap</a>
+  </div>
+  <div class="fcopy">© 2026 Nemroot Technologies LLC · <a href="tel:+13466667377" class="fphone">(346) 666-7377</a></div>
+</footer>
+
+<style>
+  footer {
+    background: var(--bg-2);
+    border-top: 1px solid var(--border);
+    padding: 28px var(--pad);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .logo { display: flex; align-items: center; gap: 9px; font-family: var(--font-head); font-size: 1rem; font-weight: 800; color: #fff; }
+  .lm {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent-dark) 100%);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 900; color: #fff;
+  }
+  .flinks { display: flex; gap: 22px; }
+  .flinks a { font-size: 0.78rem; color: var(--muted); text-decoration: none; }
+  .flinks a:hover { color: var(--accent); }
+  .fcopy { font-size: 0.72rem; color: rgba(110, 132, 158, 0.5); }
+  .fphone { color: inherit; text-decoration: none; }
+  .fphone:hover { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    footer { flex-direction: column; text-align: center; }
+    .flinks { flex-wrap: wrap; justify-content: center; }
+  }
+</style>

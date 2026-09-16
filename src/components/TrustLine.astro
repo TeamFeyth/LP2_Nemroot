@@ -1,0 +1,14 @@
+---
+interface Props {
+  center?: boolean;
+}
+const { center = false } = Astro.props;
+---
+
+<div class="trust-line" style={center ? 'justify-content:center' : undefined}>
+  <span>12-month agreement</span>
+  <span class="trust-dot"></span>
+  <span>30-day full refund</span>
+  <span class="trust-dot"></span>
+  <span>Live in 24 to 48 hours</span>
+</div>

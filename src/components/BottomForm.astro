@@ -1,0 +1,25 @@
+---
+import LeadForm from './LeadForm.astro';
+
+interface Props {
+  subcopy?: string;
+}
+const { subcopy } = Astro.props;
+---
+
+<div class="bfo-wrap">
+  <div class="bfo-inner">
+    <div class="eyebrow">Get a Live Demo</div>
+    <h2>See what it looks like on your lot.</h2>
+    {subcopy && <p class="section-sub" style="margin:0 auto;font-size:15px">{subcopy}</p>}
+    <div class="card bfo-card">
+      <LeadForm variant="bottom" heading="" subheading="" />
+    </div>
+  </div>
+</div>
+
+<style>
+  .bfo-wrap { background: var(--bg-2); border-top: 1px solid var(--border); }
+  .bfo-inner { max-width: 40rem; margin: 0 auto; padding: 76px var(--pad); text-align: center; }
+  .bfo-card { text-align: left; margin-top: 28px; padding: 32px; }
+</style>

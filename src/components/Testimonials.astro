@@ -1,0 +1,53 @@
+---
+interface Props {
+  eyebrow: string;
+  heading: string;
+}
+const { eyebrow, heading } = Astro.props;
+
+const testimonials = [
+  {
+    quote: 'We have seen a twofold increase in sales and incoming customers. All dealers should switch to this system.',
+    name: 'Sertwin LLC',
+    role: 'Owner · Sertwin Automotive Group',
+  },
+  {
+    quote: 'Excellent automation software built specifically for car dealerships. Helps streamline lead management and customer follow-ups. Highly recommended.',
+    name: 'CTN Motors',
+    role: 'Automotive Dealership',
+  },
+  {
+    quote: "It's rare to find a platform that understands the specific needs of the automotive industry so well. 5 stars for innovation and reliability.",
+    name: 'SofTech Texas',
+    role: 'Automotive Technology Group',
+  },
+];
+---
+
+<div class="wrap">
+  <div class="eyebrow">{eyebrow}</div>
+  <h2>{heading}</h2>
+  <div class="testis">
+    {testimonials.map((t) => (
+      <div class="card testi">
+        <div class="stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <p class="tq">"{t.quote}"</p>
+        <div class="tname">{t.name}</div>
+        <div class="trole">{t.role}</div>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .wrap { padding: 76px var(--pad); max-width: var(--container); margin: 0 auto; }
+  .testis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+  .stars { color: var(--accent); font-size: 0.75rem; margin-bottom: 12px; letter-spacing: 2px; }
+  .tq { font-size: 0.85rem; color: var(--muted-2); line-height: 1.75; margin-bottom: 16px; max-width: none; }
+  .tname { font-size: 0.82rem; font-weight: 700; color: #fff; }
+  .trole { font-size: 0.75rem; color: var(--muted); }
+
+  @media (max-width: 960px) {
+    .testis { grid-template-columns: 1fr; }
+  }
+</style>
