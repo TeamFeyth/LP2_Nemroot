@@ -11,8 +11,8 @@
 /* casual junk POSTs. Never put a CRM credential in this file.       */
 /* ---------------------------------------------------------------- */
 
-const LEAD_RELAY_URL = '';   // https://script.google.com/macros/s/AKfyc.../exec
-const LEAD_RELAY_TOKEN = ''; // value printed by setup() in the Apps Script editor
+const LEAD_RELAY_URL = 'https://script.google.com/macros/s/AKfycbzCGZt2T0Qgko8AZTNIrbt3B3pYI_q5gX_FNaIgr2ja9ZHhKGF2MlPCQcyBUVTQBvvmVw/exec';   // https://script.google.com/macros/s/AKfyc.../exec
+const LEAD_RELAY_TOKEN = '06d06061235f440381700994f024573e'; // value printed by setup() in the Apps Script editor
 const LANDING_PAGE_ID = 'LP2';
 
 const SESSION_KEY = 'nemroot_popup_autoshown';
