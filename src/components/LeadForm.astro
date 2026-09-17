@@ -115,6 +115,16 @@ const id = (suffix: string) => `${variant}-${suffix}`;
       <input type="hidden" name="utm_campaign" data-hidden-field="utm_campaign" />
       <input type="hidden" name="utm_content" data-hidden-field="utm_content" />
       <input type="hidden" name="utm_term" data-hidden-field="utm_term" />
+      <input type="hidden" name="gclid" data-hidden-field="gclid" />
+      <input type="hidden" name="fbclid" data-hidden-field="fbclid" />
+
+      <!-- Anti-spam honeypot. Never shown to a person and not part of the
+           six specified form fields; the relay drops any submission where
+           this arrives non-empty. -->
+      <div class="hp-field" aria-hidden="true">
+        <label for={id('company-website')}>Company website</label>
+        <input type="text" id={id('company-website')} name="hp" tabindex="-1" autocomplete="off" />
+      </div>
 
       <button class="field-submit" type="submit">{submitLabel}</button>
     </div>
@@ -137,6 +147,13 @@ const id = (suffix: string) => `${variant}-${suffix}`;
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
+  }
+  .hp-field {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
   }
   .reveal-hidden { display: none; }
   [data-reveal-step="2"], [data-reveal-step="3"] { margin-top: -6px; }

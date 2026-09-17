@@ -4,6 +4,17 @@
 // phone formatting, hidden UTM/context fields, validation and the
 // inline success state + pixel event on submit.
 
+/* ---------------------------------------------------------------- */
+/* Lead relay (Nemroot-lead-relay Apps Script)                       */
+/* Fill these in after deploying the script. See the tutorial.       */
+/* The token is not a secret that protects data — it only stops      */
+/* casual junk POSTs. Never put a CRM credential in this file.       */
+/* ---------------------------------------------------------------- */
+
+const LEAD_RELAY_URL = '';   // https://script.google.com/macros/s/AKfyc.../exec
+const LEAD_RELAY_TOKEN = ''; // value printed by setup() in the Apps Script editor
+const LANDING_PAGE_ID = 'LP2';
+
 const SESSION_KEY = 'nemroot_popup_autoshown';
 
 // LP2 spec, Section 5 / 4: "fires once per page load (fired flag), not
@@ -37,6 +48,10 @@ function initHiddenFields() {
     if (key === 'page_url') el.value = window.location.href;
     else if (key === 'timestamp') el.value = now;
     else if (key.startsWith('utm_')) el.value = params.get(key) || '';
+    // Google and Meta click IDs, so paid clicks stay attributable and
+    // offline conversions can be imported back later.
+    else if (key === 'gclid') el.value = params.get('gclid') || params.get('gbraid') || params.get('wbraid') || '';
+    else if (key === 'fbclid') el.value = params.get('fbclid') || '';
   });
 }
 
@@ -191,7 +206,7 @@ function initFormSubmission() {
         return;
       }
       if (errorEl) errorEl.classList.remove('show');
-      handleValidSubmit(form);
+      handleValidSubmit(form);   // async; errors surface inside the function
     });
   });
 }
@@ -221,29 +236,125 @@ function validate(form) {
   return valid;
 }
 
-function handleValidSubmit(form) {
+async function handleValidSubmit(form) {
   const fields = form.querySelector('.lead-form-fields');
   const success = form.querySelector('[data-form-success]');
+  const errorEl = form.querySelector('[data-form-error]');
+  const submitBtn = form.querySelector('.field-submit');
+
+  const originalLabel = submitBtn ? submitBtn.textContent : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+  }
+
+  const delivered = await sendLead(buildPayload(form));
+
+  if (!delivered) {
+    // The lead did not reach the relay. Keep the form filled in so the
+    // person can retry rather than losing what they typed.
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+    }
+    if (errorEl) {
+      // PLACEHOLDER copy — Open Item #1 (confirmation/error wording is
+      // "blank — not specified" in the build doc). Replace once approved.
+      errorEl.textContent = "That didn't go through. Please try again, or call (346) 666-7377.";
+      errorEl.classList.add('show');
+    }
+    return;
+  }
+
   if (fields) fields.classList.add('hide');
   if (success) success.classList.add('show');
 
-  // Client-side Meta Pixel event — safe to fire today (no backend needed).
+  // Client-side Meta Pixel event.
   if (typeof window.fbq === 'function') {
     window.fbq('track', 'Lead', { content_name: form.dataset.formSource || 'unknown' });
   }
-
-  const payload = Object.fromEntries(new FormData(form).entries());
-  sendLeadToCRM(payload);
 }
 
-// TODO: wire up once the Nemroot CRM endpoint exists (Section 2 of the
-// build spec — endpoint URL, payload format and auth are all still
-// pending). Keep this a no-op stub until then; do not add a fetch() call
-// with a hardcoded secret in this file — any CRM auth token must live
-// server-side (a Cloudflare Pages Function / Worker), never in client JS.
-function sendLeadToCRM(payload) {
-  if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
-    console.info('[nemroot] lead captured (CRM endpoint not yet configured):', payload);
+/**
+ * Flattens the form into the payload the relay expects. The three qualifying
+ * radios are named per form instance (hero_seats, popup_seats...), so they are
+ * normalized to stable keys here.
+ */
+function buildPayload(form) {
+  const raw = Object.fromEntries(new FormData(form).entries());
+  const variant = form.dataset.formSource || 'unknown';
+
+  return {
+    token: LEAD_RELAY_TOKEN,
+    landing_page: LANDING_PAGE_ID,
+    form_source: variant,
+
+    first_name: raw.first_name || '',
+    phone: raw.phone || '',
+    dealership_name: raw.dealership_name || '',
+
+    seats: raw[`${variant}_seats`] || '',
+    monthly_leads: raw[`${variant}_leads`] || '',
+    ad_platforms: raw[`${variant}_platforms`] || '',
+
+    utm_source: raw.utm_source || '',
+    utm_medium: raw.utm_medium || '',
+    utm_campaign: raw.utm_campaign || '',
+    utm_content: raw.utm_content || '',
+    utm_term: raw.utm_term || '',
+    gclid: raw.gclid || '',
+    fbclid: raw.fbclid || '',
+
+    page_url: raw.page_url || window.location.href,
+    submitted_at: raw.timestamp || new Date().toISOString(),
+    user_agent: navigator.userAgent,
+
+    hp: raw.hp || '',
+  };
+}
+
+/**
+ * Posts the lead to the Nemroot-lead-relay Apps Script, which writes the
+ * backup row to Google Sheets and emails Nemroot's intake address.
+ *
+ * Content-Type is text/plain on purpose: it keeps this inside the CORS
+ * "simple request" rules, so the browser skips the preflight OPTIONS call
+ * that Apps Script web apps cannot answer. The body is still JSON.
+ *
+ * Returns true only when the relay confirms it handled the lead.
+ */
+async function sendLead(payload) {
+  if (!LEAD_RELAY_URL) {
+    console.warn('[nemroot] LEAD_RELAY_URL is not set — lead not sent:', payload);
+    return false;
   }
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+
+      const res = await fetch(LEAD_RELAY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        redirect: 'follow',
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+      if (data && data.ok) return true;
+
+      console.error('[nemroot] relay rejected the lead:', data && data.error);
+      return false;
+    } catch (err) {
+      console.error(`[nemroot] relay attempt ${attempt + 1} failed:`, err);
+      if (attempt === 0) await new Promise((r) => setTimeout(r, 900));
+    }
+  }
+
+  return false;
 }
