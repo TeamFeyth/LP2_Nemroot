@@ -238,16 +238,6 @@ img, svg { display: block; max-width: 100%; }
 .field-submit:hover { filter: brightness(1.08); box-shadow: 0 8px 24px rgba(0, 144, 224, 0.3); }
 .field-submit:disabled { opacity: .6; cursor: not-allowed; }
 
-.consent-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin: 10px 0 4px;
-}
-
-.consent-row input[type="checkbox"] { margin-top: 3px; accent-color: var(--accent); flex-shrink: 0; width: 15px; height: 15px; }
-.consent-row label { font-size: 0.68rem; color: var(--muted); line-height: 1.5; }
-
 .form-error-text { font-size: 0.72rem; color: #F09B94; margin: -2px 0 10px; display: none; }
 .form-error-text.show { display: block; }
 
@@ -276,8 +266,7 @@ img, svg { display: block; max-width: 100%; }
 
 .form-success { display: none; text-align: center; padding: 12px 4px; }
 .form-success.show { display: block; }
-.form-success h3 { font-family: var(--font-head); font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
-.form-success p { font-size: 0.85rem; color: var(--muted-2); max-width: none; }
+.form-success p { font-size: 0.9rem; color: var(--muted-2); max-width: none; }
 .lead-form-fields.hide { display: none; }
 
 /* ---- accessibility floor ---- */

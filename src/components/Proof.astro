@@ -1,19 +1,16 @@
 ---
+// Section 5 / "Proof — Real Numbers, One Dealership" — all stat labels and the
+// disclaimer are verbatim from the spec. Stat labels differ between LP1 and LP2
+// (see spec), so they are passed in rather than hardcoded.
+interface Stat { num: string; label: string }
 interface Props {
   eyebrow: string;
   heading: string;
   body: string;
+  stats: Stat[];
+  disclaimer: string;
 }
-const { eyebrow, heading, body } = Astro.props;
-
-const stats = [
-  { num: '14s', label: 'Avg. response time vs. 2+ hr industry avg.' },
-  { num: '1,497', label: 'Leads handled' },
-  { num: '10,073', label: 'AI messages sent, zero manual replies' },
-  { num: '120', label: 'Test drives booked' },
-  { num: '82', label: 'Cars sold' },
-  { num: '4.3★', label: 'Google — 592 reviews, +121 since Nemroot' },
-];
+const { eyebrow, heading, body, stats, disclaimer } = Astro.props;
 ---
 
 <div class="section-alt">
@@ -22,7 +19,7 @@ const stats = [
       <div class="eyebrow">{eyebrow}</div>
       <h2>{heading}</h2>
       <p class="section-sub" style="margin-bottom:16px">{body}</p>
-      <div class="disc">Results from Kayalar Motors over a 30-day period. Individual results vary.</div>
+      <div class="disc">{disclaimer}</div>
     </div>
     <div class="pgrid">
       {stats.map((s) => (
@@ -51,10 +48,6 @@ const stats = [
   .plbl { font-size: 0.72rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
   .disc { font-size: 0.68rem; color: rgba(110, 132, 158, 0.5); margin-top: 20px; line-height: 1.6; }
 
-  @media (max-width: 960px) {
-    .proof-layout { grid-template-columns: 1fr; gap: 36px; }
-  }
-  @media (max-width: 640px) {
-    .pgrid { grid-template-columns: 1fr 1fr; }
-  }
+  @media (max-width: 960px) { .proof-layout { grid-template-columns: 1fr; gap: 36px; } }
+  @media (max-width: 640px) { .pgrid { grid-template-columns: 1fr 1fr; } }
 </style>

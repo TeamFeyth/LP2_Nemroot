@@ -1,15 +1,18 @@
 ---
-const steps = [
-  { title: 'Lead arrives', body: 'From any channel — website, SMS, Facebook, email, phone. Captured instantly, nothing missed.' },
-  { title: 'Nemroot responds', body: 'The AI replies within 14 seconds, day or night. It knows your live inventory and qualifies the lead in the same message.' },
-  { title: 'Appointment booked', body: 'Follow-up runs automatically until the customer confirms a test drive. Leads that go quiet get pulled back in without anyone on your team touching it.' },
-  { title: 'Your team closes', body: 'Full context handed off to your salesperson. No lead left behind. Deal gets done.' },
-];
+// Section 5 / 8. How It Works — eyebrow, heading, step titles and bodies
+// verbatim from the spec. Step titles per spec: Receive / Respond / Book / Close.
+interface Step { title: string; body: string }
+interface Props {
+  eyebrow: string;
+  heading: string;
+  steps: Step[];
+}
+const { eyebrow, heading, steps } = Astro.props;
 ---
 
 <div class="wrap">
-  <div class="eyebrow">How It Works</div>
-  <h2>From lead to appointment, without lifting a finger.</h2>
+  <div class="eyebrow">{eyebrow}</div>
+  <h2>{heading}</h2>
   <div class="steps">
     {steps.map((s, i) => (
       <div class="card step">
@@ -45,10 +48,6 @@ const steps = [
   .stitle { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 7px; }
   .sbody { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
 
-  @media (max-width: 960px) {
-    .steps { grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 640px) {
-    .steps { grid-template-columns: 1fr; }
-  }
+  @media (max-width: 960px) { .steps { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) { .steps { grid-template-columns: 1fr; } }
 </style>

@@ -1,13 +1,19 @@
 ---
+// Section 5 / FAQ — LP1 carries an eyebrow + heading pair; LP2's spec gives only
+// a heading ("FAQ") with no eyebrow, so the eyebrow is optional.
 interface QA { q: string; a: string }
-interface Props { qa: QA[] }
-const { qa } = Astro.props;
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  qa: QA[];
+}
+const { eyebrow, heading, qa } = Astro.props;
 ---
 
 <div class="section-alt">
   <div class="wrap" style="text-align:center">
-    <div class="eyebrow">Let's Be Straight With You</div>
-    <h2>Good questions. Honest answers.</h2>
+    {eyebrow && <div class="eyebrow">{eyebrow}</div>}
+    <h2>{heading}</h2>
     <div class="objs">
       {qa.map((item) => (
         <div class="card obj">

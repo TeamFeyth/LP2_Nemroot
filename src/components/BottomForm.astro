@@ -2,15 +2,17 @@
 import LeadForm from './LeadForm.astro';
 
 interface Props {
+  eyebrow: string;
+  heading: string;
   subcopy?: string;
 }
-const { subcopy } = Astro.props;
+const { eyebrow, heading, subcopy } = Astro.props;
 ---
 
 <div class="bfo-wrap">
   <div class="bfo-inner">
-    <div class="eyebrow">Get a Live Demo</div>
-    <h2>See what it looks like on your lot.</h2>
+    <div class="eyebrow">{eyebrow}</div>
+    <h2>{heading}</h2>
     {subcopy && <p class="section-sub" style="margin:0 auto;font-size:15px">{subcopy}</p>}
     <div class="card bfo-card">
       <LeadForm variant="bottom" heading="" subheading="" />

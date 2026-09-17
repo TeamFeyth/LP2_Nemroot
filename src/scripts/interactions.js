@@ -6,6 +6,10 @@
 
 const SESSION_KEY = 'nemroot_popup_autoshown';
 
+// LP2 spec, Section 5 / 4: "fires once per page load (fired flag), not
+// explicitly once-per-session". Open Item #6 asks whether that is sufficient.
+const ONCE_PER_SESSION = false;
+
 function ready(fn) {
   if (document.readyState !== 'loading') fn();
   else document.addEventListener('DOMContentLoaded', fn);
@@ -94,10 +98,12 @@ function initPopup() {
   // visitors (or anyone who already dismissed it) aren't interrupted again.
   let autoFired = false;
   const alreadyShownThisSession = () => {
+    if (!ONCE_PER_SESSION) return false;
     try { return sessionStorage.getItem(SESSION_KEY) === '1'; } catch { return false; }
   };
   const markShown = () => {
     autoFired = true;
+    if (!ONCE_PER_SESSION) return;
     try { sessionStorage.setItem(SESSION_KEY, '1'); } catch { /* private mode etc. */ }
   };
 
@@ -211,9 +217,6 @@ function validate(form) {
     phone.classList.toggle('field-error', !ok);
     if (!ok) valid = false;
   }
-
-  const consent = form.querySelector('input[type=checkbox]');
-  if (consent && !consent.checked) valid = false;
 
   return valid;
 }

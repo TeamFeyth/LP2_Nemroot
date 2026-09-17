@@ -1,27 +1,14 @@
 ---
+// Section 5 / Testimonials — quotes verbatim from the spec.
+// LP1 and LP2 carry slightly different wording for testimonial 3 per the spec,
+// so the quotes are passed in rather than hardcoded.
+interface Testimonial { quote: string; name: string; role: string }
 interface Props {
   eyebrow: string;
   heading: string;
+  testimonials: Testimonial[];
 }
-const { eyebrow, heading } = Astro.props;
-
-const testimonials = [
-  {
-    quote: 'We have seen a twofold increase in sales and incoming customers. All dealers should switch to this system.',
-    name: 'Sertwin LLC',
-    role: 'Owner · Sertwin Automotive Group',
-  },
-  {
-    quote: 'Excellent automation software built specifically for car dealerships. Helps streamline lead management and customer follow-ups. Highly recommended.',
-    name: 'CTN Motors',
-    role: 'Automotive Dealership',
-  },
-  {
-    quote: "It's rare to find a platform that understands the specific needs of the automotive industry so well. 5 stars for innovation and reliability.",
-    name: 'SofTech Texas',
-    role: 'Automotive Technology Group',
-  },
-];
+const { eyebrow, heading, testimonials } = Astro.props;
 ---
 
 <div class="wrap">
@@ -47,7 +34,5 @@ const testimonials = [
   .tname { font-size: 0.82rem; font-weight: 700; color: #fff; }
   .trole { font-size: 0.75rem; color: var(--muted); }
 
-  @media (max-width: 960px) {
-    .testis { grid-template-columns: 1fr; }
-  }
+  @media (max-width: 960px) { .testis { grid-template-columns: 1fr; } }
 </style>

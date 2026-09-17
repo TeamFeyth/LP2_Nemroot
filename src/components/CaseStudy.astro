@@ -1,12 +1,14 @@
 ---
+// Spec 5 / 5. Case Study Section (unique to LP2) — eyebrow, heading, body,
+// callout and button text all verbatim from the build spec.
 ---
 
-<div class="founder">
-  <div class="founder-inner">
+<div class="cs">
+  <div class="cs-inner">
     <div class="eyebrow">Case Study</div>
-    <h2 style="text-align:center">One Dealership Put It to the Test. Here's What Happened.</h2>
-    <p class="founder-p">Kayalar Motors is an independent dealership in Houston. They know what it costs when a lead doesn't get called back, and what a slow follow-up looks like to a customer who already moved on. <strong>So before Nemroot went to any other dealership, it went to work on their lot first.</strong></p>
-    <div class="founder-callout">The numbers below are from that lot over the last 30 days. <strong>Real dealership, real results, nothing simulated.</strong></div>
+    <h2 style="text-align:center">Enhancing the quality of service at Kayalar Motors</h2>
+    <p class="cs-p">Kayalar Motors, a luxury dealership in Houston, was having trouble keeping up with their leads. As salespeople got tied up with other activities, clients on the showroom floor, or receiving messages after hours, they were unable to get to the customer in a timely manner.</p>
+    <div class="cs-callout">Expect the same results in 48 hours.</div>
     <div>
       <button class="btn" type="button" data-scroll-to=".sbar">Check the Numbers</button>
     </div>
@@ -14,23 +16,19 @@
 </div>
 
 <style>
-  .founder { background: var(--bg); border-bottom: 1px solid var(--border); }
-  .founder-inner { max-width: 47rem; margin: 0 auto; padding: 80px var(--pad); text-align: center; }
-  .founder-p { font-size: 1.05rem; line-height: 1.85; color: var(--muted-2); margin: 0 auto 20px; max-width: none; }
-  .founder-p :global(strong) { color: #fff; font-weight: 600; }
-  .founder-callout {
+  .cs { background: var(--bg); border-bottom: 1px solid var(--border); }
+  .cs-inner { max-width: 47rem; margin: 0 auto; padding: 80px var(--pad); text-align: center; }
+  .cs-p { font-size: 1.05rem; line-height: 1.85; color: var(--muted-2); margin: 0 auto 20px; max-width: none; }
+  .cs-callout {
     display: inline-block;
     background: var(--card);
     border: 1px solid var(--accent-border);
     border-radius: var(--radius-lg);
     padding: 20px 32px;
     margin: 4px 0 28px;
-    font-size: 0.9rem;
-    color: var(--muted-2);
-    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--accent);
+    font-weight: 600;
     line-height: 1.7;
-    max-width: 36rem;
-    text-align: left;
   }
-  .founder-callout :global(strong) { color: var(--accent); }
 </style>

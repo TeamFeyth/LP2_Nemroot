@@ -1,4 +1,12 @@
 ---
+// Section 5 / 3. Lead Capture Form Fields — exactly the six inputs listed in the
+// spec, in spec order, with the spec's labels and options. No extra fields.
+//
+// NOTE: the spec's own note says "no TCPA/SMS consent checkbox exists in either
+// source file. If the phone number will be used for calls or texts, consent
+// language needs to be added and approved." That remains an OPEN ITEM — the
+// consent language has not been written or approved, so it is not on the form.
+// See README before sending paid traffic to this page.
 interface Props {
   variant: 'hero' | 'bottom' | 'popup';
   heading?: string;
@@ -30,7 +38,7 @@ const id = (suffix: string) => `${variant}-${suffix}`;
   {subheading && <p class="fc-s">{subheading}</p>}
 
   <div class="lead-form-fields">
-    <!-- STEP 1 — always visible -->
+    <!-- STEP 1 -->
     <div data-reveal-step="1">
       <fieldset class="field-group">
         <legend class="field-label">How many seats do you need?</legend>
@@ -51,7 +59,7 @@ const id = (suffix: string) => `${variant}-${suffix}`;
       </fieldset>
     </div>
 
-    <!-- STEP 2 — leads/month + ad platforms -->
+    <!-- STEP 2 -->
     <div data-reveal-step="2" class={progressive ? 'reveal-hidden' : ''} id={id('step2')}>
       <fieldset class="field-group">
         <legend class="field-label">How many leads do you get a month?</legend>
@@ -85,7 +93,7 @@ const id = (suffix: string) => `${variant}-${suffix}`;
       </fieldset>
     </div>
 
-    <!-- STEP 3 — contact details + consent + submit -->
+    <!-- STEP 3 -->
     <div data-reveal-step="3" class={progressive ? 'reveal-hidden' : ''} id={id('step3')}>
       <label class="sr-only" for={id('first-name')}>First name</label>
       <input class="field-input" type="text" id={id('first-name')} name="first_name" placeholder="First name" style="margin-top:6px" autocomplete="given-name" />
@@ -97,13 +105,6 @@ const id = (suffix: string) => `${variant}-${suffix}`;
       <input class="field-input" type="text" id={id('dealership')} name="dealership_name" placeholder="Dealership name" autocomplete="organization" />
 
       <p class="form-error-text" data-form-error>Please fill in every field above so we can set up your demo.</p>
-
-      <div class="consent-row">
-        <input type="checkbox" id={id('consent')} name="sms_consent" required />
-        <label for={id('consent')}>
-          By checking this box, I agree to receive calls and texts from Nemroot at the number provided, including by automated means, about my demo request. Msg &amp; data rates may apply. Consent isn't a condition of purchase.
-        </label>
-      </div>
 
       <!-- hidden fields — populated on load, see interactions.js -->
       <input type="hidden" name="form_source" value={variant} />
@@ -119,9 +120,11 @@ const id = (suffix: string) => `${variant}-${suffix}`;
     </div>
   </div>
 
+  <!-- PLACEHOLDER — Open Item #1: success copy and thank-you URL not specified
+       in the build doc ("Success Heading / Success Body: blank — not specified").
+       Replace once the real confirmation copy is supplied. -->
   <div class="form-success" data-form-success>
-    <h3>You're on the list.</h3>
-    <p>Someone from the Nemroot team will call or text you within one business day to set up your live demo.</p>
+    <p>Thank you. We'll be in touch shortly.</p>
   </div>
 </form>
 

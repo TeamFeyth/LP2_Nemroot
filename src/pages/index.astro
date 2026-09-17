@@ -1,4 +1,9 @@
 ---
+// ============================================================================
+// LP2 — ALL COPY BELOW IS VERBATIM FROM Section 5 of the build spec
+// (Nemroot_Landing_Pages.md / .pdf). Do not reword. Section numbers in the
+// comments map to the spec's own numbering.
+// ============================================================================
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Topbar from '../components/Topbar.astro';
 import Hero from '../components/Hero.astro';
@@ -16,6 +21,58 @@ import BottomForm from '../components/BottomForm.astro';
 import Footer from '../components/Footer.astro';
 import Popup from '../components/Popup.astro';
 
+// Spec 5 / 10. How It Works — LP2 uses descriptive step titles (differs from LP1)
+const steps = [
+  { title: 'Lead arrives', body: 'From any channel: website, SMS, Facebook, email, phone. Captured instantly, nothing missed.' },
+  { title: 'Nemroot responds', body: 'The AI replies within 14 seconds, day or night. It knows your live inventory and qualifies the lead in the same message.' },
+  { title: 'Appointment booked', body: 'Follow-up runs automatically until the customer confirms a test drive. Leads that go quiet get pulled back in without anyone on your team touching it.' },
+  { title: 'Your team closes', body: 'Full context handed off to your salesperson. No lead left behind. Deal gets done.' },
+];
+
+// Spec 5 / 11. Why Dealers Choose Nemroot — bullets verbatim
+const bullets = [
+  'Every lead answered before the competition even sees the notification.',
+  'One inbox for all: Cargurus, Autotrader, Car.com, SMS, Facebook, email, calls, and more, all in one place.',
+  'Inventory-aware AI: When a customer asks about the white F-150 with a tow package under $45k, the AI already knows if you have it.',
+  'Automatic follow-up. No manual work, no forgotten prospects.',
+  "Runs 24/7. The AI doesn't take days off.",
+  'Live in 24 to 48 hours.',
+];
+
+// Spec 5 / 7. Proof Section. The "120" label reads "Leads converted (copy doc)"
+// here while the stats bar (spec 5 / 6) reads "Test drives booked" — the spec
+// flags this as Open Item #5, "confirm which label ships". Both are reproduced
+// exactly as the spec states them.
+const proofStats = [
+  { num: '14s', label: 'Avg. response time vs. 2+ hr industry avg.' },
+  { num: '1,497', label: 'Leads handled' },
+  { num: '10,073', label: 'AI messages sent, zero manual replies' },
+  { num: '120', label: 'Leads converted' },
+  { num: '82', label: 'Cars sold' },
+  { num: '4.3★', label: 'Google, 592 reviews, +121 since Nemroot' },
+];
+
+// Spec 5 / 12. Testimonials. Testimonial 3 is the shorter wording the spec
+// gives for LP2 (Open Item #4 flags the docx/HTML difference).
+const testimonials = [
+  {
+    quote: 'We have seen a twofold increase in sales and incoming customers. All dealers should switch to this system.',
+    name: 'Sertwin LLC',
+    role: 'Owner · Sertwin Automotive Group',
+  },
+  {
+    quote: 'Excellent automation software built specifically for car dealerships. Helps streamline lead management and customer follow-ups. Highly recommended.',
+    name: 'CTN Motors',
+    role: 'Automotive Dealership',
+  },
+  {
+    quote: "It's rare to find a platform that understands the specific needs of the automotive industry so well.",
+    name: 'SofTech Texas',
+    role: 'Automotive Technology Group',
+  },
+];
+
+// Spec 5 / 13. FAQ
 const qa = [
   {
     q: "What makes Nemroot different from what I've already tried?",
@@ -33,8 +90,8 @@ const qa = [
 ---
 
 <BaseLayout
-  title="Nemroot — Proven at a Real Dealership."
-  description="Proven at a real Houston dealership before anywhere else. One inbox, 14-second response, automatic follow-up. Live in 24 to 48 hours. 30-day full refund."
+  title="Nemroot: Proven at a Real Dealership."
+  description="Nemroot was tested on Kayalar Motors' lot first, then built for every dealership. One inbox, 14-second response, automatic follow-up. Live in 24 to 48 hours. 30-day full refund."
 >
   <Topbar />
 
@@ -53,18 +110,20 @@ const qa = [
     eyebrow="Real Numbers. One Dealership."
     heading="These Are the Last 30 Days at Kayalar Motors."
     body="Not an average across accounts. These are the real numbers from Kayalar Motors, a Houston dealership running Nemroot."
+    stats={proofStats}
+    disclaimer="Results from Kayalar Motors over a 30-day period. Individual results vary."
   />
 
   <Problem
     eyebrow="Sound Familiar"
     heading="This Dealership Had the Same 750 Leads You Do."
     before={[
-      '800 leads came in. 50 closed. Roughly 750 never got a real follow-up — not because the leads were bad, but because the response was slow and the follow-up never happened.',
+      '800 leads came in. 50 closed. Roughly 750 never got a real follow-up, not because the leads were bad, but because the response was slow and the follow-up never happened.',
     ]}
     statNum="750"
     statLabel="leads that never got a real follow-up"
     after={[
-      "That's what Kayalar Motors was looking at on their own lot before Nemroot. <strong>They didn't read about this problem in a case study. They lived it.</strong>",
+      "That's what Kayalar Motors was looking at on their own lot before Nemroot. They didn't read about this problem in a case study. They lived it.",
       "That's the only problem Nemroot exists to fix. And it's exactly what got fixed at Kayalar Motors.",
     ]}
   />
@@ -76,28 +135,37 @@ const qa = [
     tagline="Built the same way it runs on Kayalar Motors today."
   />
 
-  <HowItWorks />
+  <HowItWorks
+    eyebrow="How It Works"
+    heading="From lead to appointment, without lifting a finger."
+    steps={steps}
+  />
 
   <Features
-    eyebrow="Why Dealers Choose Nemroot"
-    heading="Every feature built on a real lot, for a real lot."
+    eyebrow="Built for the showroom."
+    heading="Why Dealers Choose Nemroot"
     subcopy="These aren't features a software team dreamed up. They're the exact tools Kayalar Motors needed to stop losing leads on their own floor."
+    bullets={bullets}
   />
 
   <Testimonials
     eyebrow="Dealers Who Made the Switch"
     heading="They checked the numbers. Then they switched."
+    testimonials={testimonials}
   />
 
-  <FAQObjections qa={qa} />
+  <FAQObjections heading="FAQ" qa={qa} />
 
   <SecondaryCTA
-    heading="The Dealer Who Built This Was Losing the Same Leads You Are."
-    body="He fixed it. If you start now, it can run on your lot in the next 24 to 48 hours."
+    heading="Kayalar Motors Was Losing the Same Leads You Are."
+    body="Nemroot fixed it there. If you start now, it can run on your lot in the next 24 to 48 hours."
     ctaLabel="See How It Works"
   />
 
-  <BottomForm />
+  <BottomForm
+    eyebrow="Get a Live Demo"
+    heading="See what it looks like on your lot."
+  />
 
   <Footer />
 

@@ -1,14 +1,44 @@
 # Nemroot — Landing Page 2 (Astro)
 
-"Proven at a Real Dealership" — Kayalar Motors case-study angle.
+## Copy policy for this repo
+
+**Every user-visible string on this page is reproduced verbatim from Section 5 of
+the build spec** (`Nemroot_Landing_Pages.md` / `.pdf`). Nothing has been reworded.
+The HTML draft (`lp2-html.html`) was used only as the reference for layout and
+visual design — where the draft's wording differs from the spec, **the spec wins**.
+
+This matters especially on this page: the `lp2-html.html` draft still carries the
+old framing in which Nemroot's founder owns Kayalar Motors ("He Ran a Lot. Then He
+Built the Tool He Wished He Had", "the dealership the dealer who built this ran").
+The spec explicitly retired that framing — Section 5 / 7 notes: *"both the .docx
+and HTML draft previously implied Nemroot's founder owns Kayalar Motors. Both
+versions have been rewritten to frame Kayalar Motors as a client case study
+instead."* **This build follows the spec. None of the founder-ownership language
+appears on the page.**
+
+All page copy lives in `src/pages/index.astro`, commented with its spec section number.
+
+## Contradictions in the source, reproduced as written
+
+The spec contradicts itself in two places. Both are reproduced exactly as
+specified rather than silently reconciled, because both are listed as open items
+for the client to decide:
+
+- **The "120" stat.** The stats bar (Section 5 / 6) labels it `Test drives booked`.
+  The proof section (Section 5 / 7) labels it `Leads converted (copy doc)`. The
+  page therefore shows a different label in each place. Open Item #5 asks which
+  ships.
+- **Testimonial 3.** LP2's spec gives the short wording ("...so well.") while LP1's
+  spec gives the long one ("...5 stars for innovation and reliability."). Each page
+  uses its own. Open Item #4 asks which ships.
+
+Also note Section 5 / 11 puts the sentence `Built for the showroom.` in the
+**eyebrow** slot and `Why Dealers Choose Nemroot` in the **heading** slot — the
+reverse of LP1's pattern. Built as specified.
 
 ## Stack
 
-Astro (static output, no adapter needed) — ships as plain HTML/CSS/JS, works
-out of the box on Cloudflare Pages. Shares the exact same design system,
-component patterns and `interactions.js` behaviour as LP1 — this is a
-separate repo/deploy, not a shared package, per the two GitHub repos in the
-build spec.
+Astro, static output. No adapter needed for Cloudflare Pages.
 
 ## Local development
 
@@ -16,86 +46,47 @@ build spec.
 npm install
 npm run dev       # http://localhost:4321
 npm run build     # outputs to /dist
-npm run preview   # serve the production build locally
+npm run preview
 ```
 
 ## Deploying to Cloudflare Pages
-
-Connect this repo in Cloudflare Pages and use:
 
 - **Build command:** `npm run build`
 - **Build output directory:** `dist`
 - **Framework preset:** Astro
 
-No environment variables are required for the current build.
+## What's implemented
 
-## Project structure
+- **Meta Pixel** (`2302599970275699`) in `<head>`, `PageView` on load, `Lead` on submit.
+- **Popup** — desktop exit-intent (`clientY < 10`) + mobile scroll-depth (>65%),
+  firing **once per page load**, exactly as the spec describes for this page
+  (`ONCE_PER_SESSION = false` in `interactions.js`). No progressive reveal on this
+  page — the spec only specifies that for LP1. Open Item #6 asks whether
+  once-per-page-load is sufficient or a session rule is wanted; flip the constant
+  if so.
+- **Form** — exactly the six fields the spec lists. No extra fields.
+- **"Check the Numbers"** button scrolls to the stats bar (`.sbar`) per Section 5 / 2.
+- **Hidden fields** for the CRM handoff: `form_source`, `page_url`, `timestamp`,
+  and the full UTM set.
+- Footer phone is a `tel:` link (Open Item #8).
 
-```
-src/
-  layouts/BaseLayout.astro   <head> boilerplate, fonts, Meta Pixel, tracking placeholders
-  components/                one component per page section, incl. CaseStudy.astro (LP2-only)
-  scripts/interactions.js    popup, progressive reveal, phone formatting, validation, submit
-  styles/global.css          shared design tokens (color/type/radius) + base elements
-  pages/index.astro          assembles the page (Hero → Case Study → Stats → Proof → Problem → ...)
-```
+## ⚠️ Open Items — unresolved, carried over from the spec
 
-## What's already wired up
+1. **Confirmation copy and thank-you URL** ("blank — not specified"). A minimal
+   placeholder is in place, marked in `LeadForm.astro`. **Replace before launch.**
+2. **No SMS/call consent language despite collecting phone numbers.** The spec says
+   consent language "needs to be added and approved"; it has not been, so nothing
+   has been put on the form. Legal/TCPA exposure to resolve before paid traffic.
+3. Confirm the "120" label (Open Item #5) and testimonial wording (Open Item #4).
+4. Privacy Policy, Terms of Service and Sitemap links have no destinations (`#`).
+5. **CRM endpoint** — `sendLeadToCRM()` in `interactions.js` is a no-op stub.
+   Submissions are not stored anywhere yet.
+6. GTM / GA4 / CallRail / Search Console IDs — commented placeholders in
+   `BaseLayout.astro`.
 
-- **Meta Pixel** (`2302599970275699`) — loaded in `<head>`, fires `PageView` on load and a
-  `Lead` event on every successful form submit (hero / bottom / popup).
-- **Popup triggers** — desktop exit-intent + mobile scroll-depth (>65%), same as the original
-  draft, but now gated to fire **at most once per browser session** (`sessionStorage`) instead
-  of once per page load. Manual "See How It Works" clicks always open it regardless.
-- No progressive reveal on this popup — the build spec only calls for that on LP1's popup, so
-  this one shows all fields at once, matching its own spec and its original draft.
-- **TCPA/SMS consent checkbox** — added to all three form instances with standard consent
-  copy, since the doc flagged phone numbers being collected with no consent language. **Legal/
-  compliance should review and approve the exact wording** before launch.
-- **Hidden fields** on every form: `form_source` (hero/bottom/popup), `page_url`, `timestamp`,
-  and `utm_source/medium/campaign/content/term` — ready for the CRM integration.
-- **Inline success state** in place of a redirect, since there's no CRM endpoint or thank-you
-  URL yet.
-- Footer phone number is a working `tel:` link. Phone inputs auto-format as you type.
-- The "120" stat is labeled **"Test drives booked"** everywhere on this page (stats bar and
-  proof grid both), instead of "Leads converted" as one copy-doc cell suggested — the doc
-  itself uses "Test drives booked" for the same number in the stats bar section, so this
-  keeps the page internally consistent. Flag it if "Leads converted" was actually intended.
-- FAQ section uses the eyebrow/heading pair ("Let's Be Straight With You" / "Good questions.
-  Honest answers.") that's already in both HTML drafts, rather than the plain "FAQ" heading
-  in this page's own copy table.
+## Meta Conversions API token
 
-## ⚠️ Content calls worth a second look
-
-- **Meta description rewritten.** The copy doc's description ("A 30-year dealer built Nemroot
-  to fix his own lead problem first...") restates the founder-owns-Kayalar framing that the
-  doc says was deliberately removed elsewhere on this page (Kayalar is presented everywhere
-  else as an independent client, not a founder-owned lot). Shipping that line in the meta
-  description would contradict the corrected page content, so it's been rewritten to:
-  "Proven at a real Houston dealership before anywhere else. One inbox, 14-second response,
-  automatic follow-up. Live in 24 to 48 hours. 30-day full refund."
-- **Secondary CTA heading kept as-is** ("The Dealer Who Built This Was Losing the Same Leads
-  You Are.") — it's consistent across both the docx and the HTML draft, so it's been left
-  alone, but it sits close to the same founder/dealer territory as the line above. Worth a
-  quick sanity check from whoever owns the Kayalar-as-client messaging.
-
-## ⚠️ Still needs input before this goes live
-
-1. **Domain / subdomain** this deploys to, and the Cloudflare Pages project/worker name.
-2. **CRM endpoint URL, auth, and payload format** — `sendLeadToCRM()` in `interactions.js`
-   is a no-op stub marked with a `TODO` until this exists.
-3. **GTM / GA4 / CallRail / Search Console IDs** — placeholders with the correct placement
-   are already commented into `BaseLayout.astro`; drop the real IDs/snippets in and
-   uncomment.
-4. **Thank-you page URL**, if a redirect is preferred over the inline success message.
-5. **Exact TCPA consent copy** — see above.
-6. **Privacy Policy / Terms of Service / Sitemap** URLs (footer links are `#` placeholders).
-
-## A note on the Meta Conversions API token
-
-The build doc included a Meta Conversions API **access token**. That's a server-side secret,
-not a snippet — it must never ship in client/static code (this project is 100% static, so
-anything in this repo is publicly visible in the browser). It has **not** been placed
-anywhere in this project. When the CRM/CAPI integration is built, store it as an encrypted
-Cloudflare Pages environment variable and call the Conversions API from a server-side
-function (a Cloudflare Pages Function), never from the browser.
+The build doc included a Meta Conversions API **access token**. It is a server-side
+secret and this project is fully static, so **the token is not in this project**.
+Store it as an encrypted Cloudflare Pages environment variable and call the
+Conversions API from a Pages Function when the CRM work happens.

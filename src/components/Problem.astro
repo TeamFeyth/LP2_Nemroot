@@ -15,12 +15,12 @@ const { eyebrow, heading, before, statNum, statLabel, after } = Astro.props;
   <div class="prob">
     <div class="eyebrow">{eyebrow}</div>
     <h2>{heading}</h2>
-    {before.map((p) => <p class="pp" set:html={p} />)}
+    {before.map((p) => <p class="pp">{p}</p>)}
     <div class="pstat">
       <div class="pn">{statNum}</div>
       <div class="pl">{statLabel}</div>
     </div>
-    {after.map((p) => <p class="pp" set:html={p} />)}
+    {after.map((p) => <p class="pp">{p}</p>)}
   </div>
 </div>
 
