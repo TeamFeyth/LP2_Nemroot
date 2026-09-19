@@ -37,17 +37,17 @@ const { title, description } = Astro.props;
     ================================================================
   -->
 
-  <!-- Google Tag Manager (head) — GTM-XXXXXXX not provided yet
-  <script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
-  -->
+  <!-- Google Tag Manager -->
+  <script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-M2D3S46C');</script>
+  <!-- End Google Tag Manager -->
 
   <!-- Google Analytics (GA4) — G-XXXXXXXXXX not provided yet
   <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
   <script is:inline>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
-  -->
-
-  <!-- CallRail Dynamic Number Insertion — swap tracking company/script id in when provided
-  <script is:inline id="callrail" src="//cdn.callrail.com/companies/COMPANY_ID/SCRIPT_ID/12/swap.js" async></script>
   -->
 
   <!-- Google Search Console verification (HTML tag method) — alternative: DNS TXT record
@@ -83,13 +83,16 @@ const { title, description } = Astro.props;
     Conversions API from a server-side function, never from the
     browser. See the README for details.
   -->
+
+  <!-- CallRail Dynamic Number Insertion -->
+  <script is:inline type="text/javascript" src="//cdn.callrail.com/companies/514974372/23e9803bf1d2dc4300ce/12/swap.js"></script>
+  <!-- End CallRail -->
 </head>
 <body>
-  <!-- Google Tag Manager (noscript, opening body) -->
-  <!--
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M2D3S46C"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-  -->
+  <!-- End Google Tag Manager (noscript) -->
   <slot />
 </body>
 </html>
