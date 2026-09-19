@@ -126,6 +126,10 @@ const id = (suffix: string) => `${variant}-${suffix}`;
         <input type="text" id={id('company-website')} name="hp" tabindex="-1" autocomplete="off" />
       </div>
 
+      <!-- Cloudflare Turnstile widget mounts here (skipped entirely when
+           no site key is configured, so the form keeps working). -->
+      <div class="turnstile-slot" data-turnstile></div>
+
       <button class="field-submit" type="submit">{submitLabel}</button>
     </div>
   </div>
@@ -155,6 +159,7 @@ const id = (suffix: string) => `${variant}-${suffix}`;
     height: 1px;
     overflow: hidden;
   }
+  .turnstile-slot:not(:empty) { margin: 4px 0 12px; }
   .reveal-hidden { display: none; }
   [data-reveal-step="2"], [data-reveal-step="3"] { margin-top: -6px; }
 </style>

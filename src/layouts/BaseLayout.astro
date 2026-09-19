@@ -84,6 +84,12 @@ const { title, description } = Astro.props;
     browser. See the README for details.
   -->
 
+  <!-- Cloudflare Turnstile — explicit rendering so each of the three form
+       instances gets its own widget and the popup's can be rendered only
+       once the popup is actually visible. Site key lives in
+       src/scripts/interactions.js. -->
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit" async defer></script>
+
   <!-- CallRail Dynamic Number Insertion -->
   <script is:inline type="text/javascript" src="//cdn.callrail.com/companies/514974372/23e9803bf1d2dc4300ce/12/swap.js"></script>
   <!-- End CallRail -->

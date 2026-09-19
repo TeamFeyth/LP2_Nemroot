@@ -15,6 +15,28 @@ const LEAD_RELAY_URL = 'https://script.google.com/macros/s/AKfycbzCGZt2T0Qgko8AZ
 const LEAD_RELAY_TOKEN = '06d06061235f440381700994f024573e'; // value printed by setup() in the Apps Script editor
 const LANDING_PAGE_ID = 'LP2';
 
+/* ---------------------------------------------------------------- */
+/* Cloudflare Turnstile                                              */
+/* The site key is public by design — it is meant to sit in the      */
+/* page. The SECRET key is not: it belongs in the lead relay, which  */
+/* must verify the token server-side against Cloudflare's            */
+/* siteverify endpoint. Until that verification exists, Turnstile    */
+/* only filters traffic in the browser.                              */
+/* Leave empty to disable: forms keep working, no widget renders.    */
+/* ---------------------------------------------------------------- */
+
+const TURNSTILE_SITE_KEY = '';
+
+/* ---------------------------------------------------------------- */
+/* Thank-you page                                                    */
+/* One fixed URL, nothing appended — no query string, no per-form    */
+/* variant — so the address the visitor lands on is always exactly   */
+/* the same and GTM can fire the lead conversion on a single clean   */
+/* page view. Leave empty to keep the inline confirmation instead.   */
+/* ---------------------------------------------------------------- */
+
+const THANK_YOU_URL = '';
+
 const SESSION_KEY = 'nemroot_popup_autoshown';
 
 // LP2 spec, Section 5 / 4: "fires once per page load (fired flag), not
@@ -28,6 +50,7 @@ function ready(fn) {
 
 ready(() => {
   initHiddenFields();
+  initTurnstile();
   initPhoneFormatting();
   initPopup();
   initProgressiveReveal();
@@ -84,6 +107,9 @@ function initPopup() {
   const openPopup = () => {
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
+    // Mounted here rather than on load: Turnstile does not render
+    // reliably inside a display:none container.
+    renderTurnstileSlots(overlay, false);
     const firstField = overlay.querySelector('input, button');
     if (firstField) firstField.focus();
   };
@@ -109,6 +135,18 @@ function initPopup() {
     if (e.key === 'Escape' && overlay.classList.contains('open')) closePopup();
   });
 
+  // Once someone starts filling any form on the page, the automatic
+  // triggers are switched off for good — interrupting a person mid-form
+  // is the fastest way to lose the lead. 'input' covers typing in the
+  // text/phone fields, 'change' covers picking one of the radio answers.
+  // Manual CTA clicks still open the popup normally.
+  let formEngaged = false;
+  const markEngaged = () => { formEngaged = true; };
+  document.querySelectorAll('form[data-lead-form]').forEach((f) => {
+    f.addEventListener('input', markEngaged);
+    f.addEventListener('change', markEngaged);
+  });
+
   // Automatic triggers — gated to once per browser session so returning
   // visitors (or anyone who already dismissed it) aren't interrupted again.
   let autoFired = false;
@@ -125,7 +163,7 @@ function initPopup() {
   if (!alreadyShownThisSession()) {
     // Desktop: exit-intent (cursor leaves toward the top of the viewport)
     document.addEventListener('mouseleave', (e) => {
-      if (autoFired || alreadyShownThisSession()) return;
+      if (formEngaged || autoFired || alreadyShownThisSession()) return;
       if (window.innerWidth >= 768 && e.clientY < 10) {
         markShown();
         setTimeout(openPopup, 300);
@@ -134,7 +172,7 @@ function initPopup() {
 
     // Mobile: scroll-depth past ~65%
     window.addEventListener('scroll', () => {
-      if (autoFired || alreadyShownThisSession()) return;
+      if (formEngaged || autoFired || alreadyShownThisSession()) return;
       if (window.innerWidth >= 768) return;
       const scrollable = document.body.scrollHeight - window.innerHeight;
       if (scrollable <= 0) return;
@@ -193,6 +231,71 @@ function initScrollToTriggers() {
 }
 
 /* ---------------------------------------------------------------- */
+/* Turnstile                                                          */
+/* ---------------------------------------------------------------- */
+
+function initTurnstile() {
+  if (!TURNSTILE_SITE_KEY) return;
+
+  // The API script is async, so it may land before or after this module.
+  // Cover both orders: render now if it is already there, otherwise let
+  // its onload callback do it.
+  const start = () => renderTurnstileSlots(document, true);
+  if (window.turnstile && window.turnstile.render) start();
+  else window.onloadTurnstileCallback = start;
+}
+
+/**
+ * Renders any widget slot that has not been mounted yet.
+ * Slots inside the popup are skipped on first pass: Turnstile does not
+ * render reliably inside a display:none container, so the popup's widget
+ * is mounted when the popup opens instead.
+ */
+function renderTurnstileSlots(root, skipPopup) {
+  if (!TURNSTILE_SITE_KEY || !window.turnstile || !window.turnstile.render) return;
+
+  root.querySelectorAll('[data-turnstile]').forEach((slot) => {
+    if (slot.dataset.widgetId) return;
+    if (skipPopup && slot.closest('[data-popup-overlay]')) return;
+
+    try {
+      slot.dataset.widgetId = window.turnstile.render(slot, {
+        sitekey: TURNSTILE_SITE_KEY,
+        theme: 'dark',
+        callback: () => {
+          const form = slot.closest('form[data-lead-form]');
+          const errorEl = form && form.querySelector('[data-form-error]');
+          if (errorEl) errorEl.classList.remove('show');
+        },
+      });
+    } catch (err) {
+      console.error('[nemroot] Turnstile render failed:', err);
+    }
+  });
+}
+
+function getTurnstileToken(form) {
+  if (!TURNSTILE_SITE_KEY) return '';
+  const slot = form.querySelector('[data-turnstile]');
+  if (!slot || !slot.dataset.widgetId || !window.turnstile) return '';
+  try {
+    return window.turnstile.getResponse(slot.dataset.widgetId) || '';
+  } catch {
+    return '';
+  }
+}
+
+/** Tokens are single-use, so a failed submit needs a fresh one. */
+function resetTurnstile(form) {
+  if (!TURNSTILE_SITE_KEY) return;
+  const slot = form.querySelector('[data-turnstile]');
+  if (!slot || !slot.dataset.widgetId || !window.turnstile) return;
+  try {
+    window.turnstile.reset(slot.dataset.widgetId);
+  } catch { /* widget already gone */ }
+}
+
+/* ---------------------------------------------------------------- */
 /* Validation + submit                                                */
 /* ---------------------------------------------------------------- */
 
@@ -233,6 +336,8 @@ function validate(form) {
     if (!ok) valid = false;
   }
 
+  if (TURNSTILE_SITE_KEY && !getTurnstileToken(form)) valid = false;
+
   return valid;
 }
 
@@ -257,6 +362,8 @@ async function handleValidSubmit(form) {
       submitBtn.disabled = false;
       submitBtn.textContent = originalLabel;
     }
+    // The Turnstile token was consumed by the attempt — issue a new one.
+    resetTurnstile(form);
     if (errorEl) {
       // PLACEHOLDER copy — Open Item #1 (confirmation/error wording is
       // "blank — not specified" in the build doc). Replace once approved.
@@ -266,13 +373,23 @@ async function handleValidSubmit(form) {
     return;
   }
 
-  if (fields) fields.classList.add('hide');
-  if (success) success.classList.add('show');
-
   // Client-side Meta Pixel event.
   if (typeof window.fbq === 'function') {
     window.fbq('track', 'Lead', { content_name: form.dataset.formSource || 'unknown' });
   }
+
+  // Every successful submit lands on the thank-you page, which is where the
+  // lead conversion is tracked. The URL is used exactly as configured —
+  // nothing is appended — so the address is identical on every submit and
+  // from all three forms.
+  if (THANK_YOU_URL) {
+    window.location.assign(THANK_YOU_URL);
+    return;
+  }
+
+  // No thank-you URL configured yet: fall back to the inline confirmation.
+  if (fields) fields.classList.add('hide');
+  if (success) success.classList.add('show');
 }
 
 /**
@@ -310,6 +427,7 @@ function buildPayload(form) {
     user_agent: navigator.userAgent,
 
     hp: raw.hp || '',
+    turnstile_token: getTurnstileToken(form),
   };
 }
 
