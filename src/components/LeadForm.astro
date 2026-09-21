@@ -123,7 +123,7 @@ const id = (suffix: string) => `${variant}-${suffix}`;
            this arrives non-empty. -->
       <div class="hp-field" aria-hidden="true">
         <label for={id('company-website')}>Company website</label>
-        <input type="text" id={id('company-website')} name="hp" tabindex="-1" autocomplete="off" />
+        <input type="text" id={id('company-website')} name="hp" tabindex="-1" autocomplete="off" data-honeypot />
       </div>
 
       <!-- Cloudflare Turnstile widget mounts here (skipped entirely when

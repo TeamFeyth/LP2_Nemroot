@@ -1,0 +1,94 @@
+---
+// ============================================================================
+// /thank-you — the single page every successful submit lands on, from all
+// three forms and from both landing pages. This is where the lead conversion
+// is tracked: BaseLayout loads GTM and the Meta Pixel, so the page view here
+// is what the conversion tag fires on.
+//
+// ⚠️ PLACEHOLDER COPY — Open Item #1 in the build spec lists the confirmation
+// message as "blank — not specified". Nothing below comes from the copy doc.
+// Replace it with approved wording before this goes in front of paid traffic.
+// ============================================================================
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="Thank you — Nemroot"
+  description="Your demo request has been received."
+  noindex={true}
+>
+  <main class="ty">
+    <div class="ty-inner">
+      <div class="ty-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+      </div>
+      <h1>Thank you. We've got your request.</h1>
+      <p class="ty-body">
+        Someone from the Nemroot team will call or text you shortly to set up
+        your live demo.
+      </p>
+      <p class="ty-meta">
+        Need to reach us sooner? Call <a href="tel:+13466667377">(346) 666-7377</a>.
+      </p>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .ty {
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    min-height: 68vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px var(--pad);
+    position: relative;
+    overflow: hidden;
+  }
+  .ty::before {
+    content: '';
+    position: absolute;
+    top: -220px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(0, 144, 224, 0.10) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .ty-inner { max-width: 34rem; text-align: center; position: relative; z-index: 1; }
+  .ty-mark {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 26px;
+    border-radius: 50%;
+    background: var(--accent-glow);
+    border: 1px solid var(--accent-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ty-mark svg {
+    width: 26px;
+    height: 26px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ty-body {
+    font-size: 1.05rem;
+    color: var(--muted-2);
+    line-height: 1.75;
+    margin: 18px auto 0;
+    max-width: none;
+  }
+  .ty-meta { font-size: 0.85rem; color: var(--muted); margin: 22px auto 0; max-width: none; }
+  .ty-meta a { color: var(--accent); text-decoration: none; }
+  .ty-meta a:hover { text-decoration: underline; }
+</style>

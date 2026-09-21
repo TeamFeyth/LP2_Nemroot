@@ -35,7 +35,7 @@ const TURNSTILE_SITE_KEY = '';
 /* page view. Leave empty to keep the inline confirmation instead.   */
 /* ---------------------------------------------------------------- */
 
-const THANK_YOU_URL = '';
+const THANK_YOU_URL = '/thank-you';
 
 const SESSION_KEY = 'nemroot_popup_autoshown';
 
@@ -305,7 +305,12 @@ function initFormSubmission() {
       e.preventDefault();
       const errorEl = form.querySelector('[data-form-error]');
       if (!validate(form)) {
-        if (errorEl) errorEl.classList.add('show');
+        if (errorEl) {
+          errorEl.textContent = form.dataset.failReason === 'turnstile'
+            ? 'Please complete the verification check below, then try again.'
+            : 'Please fill in every field above so we can set up your demo.';
+          errorEl.classList.add('show');
+        }
         return;
       }
       if (errorEl) errorEl.classList.remove('show');
@@ -322,7 +327,9 @@ function validate(form) {
     if (!form.querySelector(`[name="${cssEscape(name)}"]:checked`)) valid = false;
   });
 
-  form.querySelectorAll('input[type=text]').forEach((f) => {
+  // The honeypot is a text input too, and it is empty on every genuine
+  // submission by design — it must never be treated as a required field.
+  form.querySelectorAll('input[type=text]:not([data-honeypot])').forEach((f) => {
     const filled = f.value.trim().length > 0;
     f.classList.toggle('field-error', !filled);
     if (!filled) valid = false;
@@ -336,8 +343,12 @@ function validate(form) {
     if (!ok) valid = false;
   }
 
-  if (TURNSTILE_SITE_KEY && !getTurnstileToken(form)) valid = false;
+  if (TURNSTILE_SITE_KEY && !getTurnstileToken(form)) {
+    form.dataset.failReason = 'turnstile';
+    return false;
+  }
 
+  form.dataset.failReason = valid ? '' : 'fields';
   return valid;
 }
 
