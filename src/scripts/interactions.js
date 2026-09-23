@@ -241,16 +241,50 @@ function initScrollToTriggers() {
 /* Turnstile                                                          */
 /* ---------------------------------------------------------------- */
 
+// Per-slot state: 'pending' until the widget mounts, 'ready' once it has,
+// 'unavailable' if it never could. Verification is only ever enforced on a
+// slot that reached 'ready'.
+const TURNSTILE_READY_TIMEOUT_MS = 8000;
+
 function initTurnstile() {
   if (!TURNSTILE_SITE_KEY) return;
 
-  // The API script is async, so it may land before or after this module.
-  // Cover both orders: render now if it is already there, otherwise let
-  // its onload callback do it.
   const start = () => renderTurnstileSlots(document, true);
   if (window.turnstile && window.turnstile.render) start();
   else window.onloadTurnstileCallback = start;
+
+  // If Cloudflare's script never arrives, or the widget refuses to mount
+  // (a hostname that is not on the widget's allow-list is the usual
+  // reason), every slot still sitting at 'pending' is marked unavailable.
+  // A third-party script being down must never make the form impossible
+  // to submit — losing every lead is far worse than letting a few through
+  // unverified, and the honeypot is still running either way.
+  setTimeout(() => {
+    document.querySelectorAll('[data-turnstile]').forEach((slot) => {
+      if (slot.dataset.turnstileState !== 'ready') {
+        slot.dataset.turnstileState = 'unavailable';
+      }
+    });
+    if (!window.turnstile) {
+      console.warn('[nemroot] Turnstile never loaded — forms submit without it.');
+    }
+  }, TURNSTILE_READY_TIMEOUT_MS);
 }
+
+/** Paste nemrootTurnstileStatus() in the console to see what each slot did. */
+window.nemrootTurnstileStatus = function () {
+  const slots = Array.from(document.querySelectorAll('[data-turnstile]'));
+  return {
+    apiLoaded: Boolean(window.turnstile),
+    siteKey: TURNSTILE_SITE_KEY ? TURNSTILE_SITE_KEY.slice(0, 10) + '…' : '(empty)',
+    slots: slots.map((s) => ({
+      form: (s.closest('form[data-lead-form]') || {}).id || '?',
+      state: s.dataset.turnstileState || 'pending',
+      widgetId: s.dataset.widgetId || null,
+      rendered: s.childElementCount > 0,
+    })),
+  };
+};
 
 /**
  * Renders any widget slot that has not been mounted yet.
@@ -266,7 +300,7 @@ function renderTurnstileSlots(root, skipPopup) {
     if (skipPopup && slot.closest('[data-popup-overlay]')) return;
 
     try {
-      slot.dataset.widgetId = window.turnstile.render(slot, {
+      const widgetId = window.turnstile.render(slot, {
         sitekey: TURNSTILE_SITE_KEY,
         theme: 'dark',
         callback: () => {
@@ -274,11 +308,31 @@ function renderTurnstileSlots(root, skipPopup) {
           const errorEl = form && form.querySelector('[data-form-error]');
           if (errorEl) errorEl.classList.remove('show');
         },
+        'error-callback': (code) => {
+          // 110200 is Cloudflare's "domain not allowed": the hostname is
+          // missing from the widget's allow-list in the Turnstile dashboard.
+          console.error('[nemroot] Turnstile error', code, '— form will submit unverified.');
+          slot.dataset.turnstileState = 'unavailable';
+          return true;
+        },
+        'timeout-callback': () => {
+          slot.dataset.turnstileState = 'unavailable';
+        },
       });
+      slot.dataset.widgetId = widgetId;
+      slot.dataset.turnstileState = 'ready';
     } catch (err) {
-      console.error('[nemroot] Turnstile render failed:', err);
+      console.error('[nemroot] Turnstile render failed:', err, '— form will submit unverified.');
+      slot.dataset.turnstileState = 'unavailable';
     }
   });
+}
+
+/** True only when a widget actually mounted and is waiting on the visitor. */
+function turnstileEnforced(form) {
+  if (!TURNSTILE_SITE_KEY) return false;
+  const slot = form.querySelector('[data-turnstile]');
+  return Boolean(slot && slot.dataset.turnstileState === 'ready');
 }
 
 function getTurnstileToken(form) {
@@ -350,7 +404,7 @@ function validate(form) {
     if (!ok) valid = false;
   }
 
-  if (TURNSTILE_SITE_KEY && !getTurnstileToken(form)) {
+  if (turnstileEnforced(form) && !getTurnstileToken(form)) {
     form.dataset.failReason = 'turnstile';
     return false;
   }
@@ -452,6 +506,7 @@ function buildPayload(form) {
 
     hp: raw.hp || '',
     turnstile_token: getTurnstileToken(form),
+    turnstile_status: turnstileEnforced(form) ? 'verified' : 'unavailable',
   };
 }
 
