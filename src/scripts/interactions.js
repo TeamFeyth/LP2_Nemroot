@@ -417,6 +417,12 @@ function buildPayload(form) {
     landing_page: LANDING_PAGE_ID,
     form_source: variant,
 
+    // Idempotency key for the Nemroot Partner API. Generated once per
+    // submission and reused by the retry below, so a timeout or a lost
+    // connection replays the same id and Nemroot returns the existing
+    // lead instead of creating a second one.
+    external_id: newSubmissionId(),
+
     first_name: raw.first_name || '',
     phone: raw.phone || '',
     dealership_name: raw.dealership_name || '',
@@ -440,6 +446,22 @@ function buildPayload(form) {
     hp: raw.hp || '',
     turnstile_token: getTurnstileToken(form),
   };
+}
+
+/**
+ * Stable, unique id for one submission attempt.
+ * crypto.randomUUID needs a secure context; the fallback keeps older or
+ * non-HTTPS browsers working rather than sending an empty id, which the
+ * Partner API would reject as a missing required field.
+ */
+function newSubmissionId() {
+  try {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return `${LANDING_PAGE_ID.toLowerCase()}-${window.crypto.randomUUID()}`;
+    }
+  } catch { /* fall through */ }
+  const rand = Math.random().toString(36).slice(2, 12);
+  return `${LANDING_PAGE_ID.toLowerCase()}-${Date.now().toString(36)}-${rand}`;
 }
 
 /**
