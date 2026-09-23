@@ -25,7 +25,14 @@ const LANDING_PAGE_ID = 'LP2';
 /* Leave empty to disable: forms keep working, no widget renders.    */
 /* ---------------------------------------------------------------- */
 
-const TURNSTILE_SITE_KEY = '';
+// Vite only exposes build-time variables prefixed with PUBLIC_, so the
+// Cloudflare Pages variable must be named PUBLIC_TURNSTILE_SITE_KEY to be
+// picked up. The literal below is the same key and acts as the fallback,
+// so the widget works whether or not that variable is set. A Turnstile
+// SITE key is public by design and is meant to sit in the page; the SECRET
+// key is the one that must never appear here.
+const TURNSTILE_SITE_KEY =
+  import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAE9PtDuQBbkqYbgr';
 
 /* ---------------------------------------------------------------- */
 /* Thank-you page                                                    */
@@ -384,10 +391,10 @@ async function handleValidSubmit(form) {
     return;
   }
 
-  // Client-side Meta Pixel event.
-  if (typeof window.fbq === 'function') {
-    window.fbq('track', 'Lead', { content_name: form.dataset.formSource || 'unknown' });
-  }
+  // No Lead event is fired here on purpose. The redirect below starts
+  // immediately, which can cancel the pixel's request, and firing here as
+  // well as on /thank-you would count the same conversion twice. The Lead
+  // conversion is tracked on the /thank-you page view instead.
 
   // Every successful submit lands on the thank-you page, which is where the
   // lead conversion is tracked. The URL is used exactly as configured —
