@@ -1,5 +1,5 @@
 <footer>
-  <div class="logo"><div class="lm">N</div>Nemroot</div>
+  <a class="logo" href="/" aria-label="Nemroot — back to home"><div class="lm">N</div>Nemroot</a>
   <div class="flinks">
     <a href="#">Privacy Policy</a>
     <a href="#">Terms of Service</a>
@@ -19,7 +19,18 @@
     flex-wrap: wrap;
     gap: 16px;
   }
-  .logo { display: flex; align-items: center; gap: 9px; font-family: var(--font-head); font-size: 1rem; font-weight: 800; color: #fff; }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  .logo:hover { opacity: .8; }
   .lm {
     width: 28px; height: 28px;
     background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent-dark) 100%);
