@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import heroImage from '../assets/hero.jpeg';
 import LeadForm from './LeadForm.astro';
 import TrustLine from './TrustLine.astro';
 
@@ -13,6 +15,21 @@ const { badge, headline, subheading, ctaLabel } = Astro.props;
 ---
 
 <section class="hero">
+  <!-- Decorative: the headline already carries the message, so alt is empty.
+       eager + high priority because this is the LCP element on a paid-traffic
+       page, and Astro emits a responsive srcset so phones do not pull the
+       full-width file. -->
+  <Image
+    class="hero-bg"
+    src={heroImage}
+    alt=""
+    widths={[640, 960, 1280, 1920]}
+    sizes="100vw"
+    loading="eager"
+    fetchpriority="high"
+  />
+  <div class="hero-scrim"></div>
+
   <div class="hero-inner">
     <div>
       <div class="badge"><span class="badge-dot"></span>{badge}</div>
@@ -36,6 +53,41 @@ const { badge, headline, subheading, ctaLabel } = Astro.props;
     border-bottom: 1px solid var(--border);
     padding: 76px var(--pad) 68px;
   }
+
+  /* Photo sits at the very back; everything else stacks above it with an
+     explicit z-index so the order never depends on pseudo-element quirks. */
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* Without this the white headline sits on a bright sky and is unreadable.
+     Heavier on the left where the copy is, lighter on the right so the photo
+     still reads behind the form. */
+  .hero-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(3, 7, 18, 0.95) 0%,
+        rgba(3, 7, 18, 0.88) 38%,
+        rgba(3, 7, 18, 0.62) 72%,
+        rgba(3, 7, 18, 0.55) 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(3, 7, 18, 0.55) 0%,
+        rgba(3, 7, 18, 0.15) 40%,
+        rgba(3, 7, 18, 0.7) 100%
+      );
+  }
   /* ambient depth: soft blue glow + a faint vignette toward the edges */
   .hero::before {
     content: '';
@@ -46,6 +98,7 @@ const { badge, headline, subheading, ctaLabel } = Astro.props;
     height: 700px;
     background: radial-gradient(circle, rgba(0, 144, 224, 0.10) 0%, transparent 65%);
     pointer-events: none;
+    z-index: 2;
   }
   .hero::after {
     content: '';
@@ -53,6 +106,7 @@ const { badge, headline, subheading, ctaLabel } = Astro.props;
     inset: 0;
     background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.35) 100%);
     pointer-events: none;
+    z-index: 2;
   }
   .hero-inner {
     max-width: 1140px;
@@ -62,7 +116,7 @@ const { badge, headline, subheading, ctaLabel } = Astro.props;
     gap: 60px;
     align-items: start;
     position: relative;
-    z-index: 1;
+    z-index: 3;
   }
   .hero-sub {
     font-size: 1rem;
@@ -74,5 +128,15 @@ const { badge, headline, subheading, ctaLabel } = Astro.props;
   .fc { padding: 26px; }
   @media (max-width: 960px) {
     .hero-inner { grid-template-columns: 1fr; }
+    /* Stacked layout puts copy over the whole width, so the scrim goes
+       flat and darker instead of fading to the right. */
+    .hero-scrim {
+      background: linear-gradient(
+        180deg,
+        rgba(3, 7, 18, 0.92) 0%,
+        rgba(3, 7, 18, 0.86) 55%,
+        rgba(3, 7, 18, 0.94) 100%
+      );
+    }
   }
 </style>
