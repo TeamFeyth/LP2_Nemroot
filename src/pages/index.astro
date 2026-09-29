@@ -24,7 +24,7 @@ import Popup from '../components/Popup.astro';
 // Spec 5 / 10. How It Works — LP2 uses descriptive step titles (differs from LP1)
 const steps = [
   { title: 'Lead arrives', body: 'From any channel: website, SMS, Facebook, email, phone. Captured instantly, nothing missed.' },
-  { title: 'Nemroot responds', body: 'The AI replies within 14 seconds, day or night. It knows your live inventory and qualifies the lead in the same message.' },
+  { title: 'Nemroot responds', body: 'The AI replies within 5 seconds, day or night. It knows your live inventory and qualifies the lead in the same message.' },
   { title: 'Appointment booked', body: 'Follow-up runs automatically until the customer confirms a test drive. Leads that go quiet get pulled back in without anyone on your team touching it.' },
   { title: 'Your team closes', body: 'Full context handed off to your salesperson. No lead left behind. Deal gets done.' },
 ];
@@ -44,7 +44,7 @@ const bullets = [
 // flags this as Open Item #5, "confirm which label ships". Both are reproduced
 // exactly as the spec states them.
 const proofStats = [
-  { num: '14s', label: 'Avg. response time vs. 2+ hr industry avg.' },
+  { num: '5s', label: 'Avg. response time vs. 2+ hr industry avg.' },
   { num: '1,497', label: 'Leads handled' },
   { num: '10,073', label: 'AI messages sent, zero manual replies' },
   { num: '120', label: 'Leads converted' },
@@ -91,14 +91,14 @@ const qa = [
 
 <BaseLayout
   title="Nemroot: Proven at a Real Dealership."
-  description="Nemroot was tested on Kayalar Motors' lot first, then built for every dealership. One inbox, 14-second response, automatic follow-up. Live in 24 to 48 hours. 30-day full refund."
+  description="Nemroot was tested on Kayalar Motors' lot first, then built for every dealership. One inbox, 5-second response, automatic follow-up. Live in 24 to 48 hours. 30-day full refund."
 >
   <Topbar />
 
   <Hero
     badge="Proven at a Real Dealership."
     headline="This Houston Dealership Was Just as Frustrated With Slow Lead Follow-Up as You Are."
-    subheading="Kayalar Motors watched leads go cold, follow-ups get missed, and deals walk out the door. Then they put Nemroot to work: one inbox, one number, an AI that answers in 14 seconds and doesn't stop until the appointment is on the calendar."
+    subheading="Kayalar Motors watched leads go cold, follow-ups get missed, and deals walk out the door. Then they put Nemroot to work: one inbox, one number, an AI that answers in 5 seconds and doesn't stop until the appointment is on the calendar."
     ctaLabel="See How It Works"
   />
 
@@ -131,7 +131,7 @@ const qa = [
   <SolutionBridge
     eyebrow="One Number. One Inbox."
     heading="Every lead from every channel, in one place."
-    copy="Every lead from every channel (website, SMS, Facebook, email, phone) in one place. The AI picks up in 14 seconds, knows what's on your lot right now, and keeps following up until the customer books a test drive. Your team takes it from there."
+    copy="Every lead from every channel (website, SMS, Facebook, email, phone) in one place. The AI picks up in 5 seconds, knows what's on your lot right now, and keeps following up until the customer books a test drive. Your team takes it from there."
     tagline="Built the same way it runs on Kayalar Motors today."
   />
 
