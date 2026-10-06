@@ -11,8 +11,14 @@
 /* casual junk POSTs. Never put a CRM credential in this file.       */
 /* ---------------------------------------------------------------- */
 
-const LEAD_RELAY_URL = 'https://script.google.com/macros/s/AKfycbzCGZt2T0Qgko8AZTNIrbt3B3pYI_q5gX_FNaIgr2ja9ZHhKGF2MlPCQcyBUVTQBvvmVw/exec';   // https://script.google.com/macros/s/AKfyc.../exec
-const LEAD_RELAY_TOKEN = '06d06061235f440381700994f024573e'; // value printed by setup() in the Apps Script editor
+// Same-origin endpoint, served by functions/api/lead.js on Cloudflare.
+//
+// This used to be the Apps Script URL with a shared token beside it. Both had
+// to travel to the browser to work, which meant anyone could read them from
+// the page source and post leads straight into the CRM — and Nemroot's agent
+// texts whatever number it is given. The credentials now live server-side in
+// Cloudflare and never reach the client.
+const LEAD_RELAY_URL = '/api/lead';
 const LANDING_PAGE_ID = 'LP2';
 
 /* ---------------------------------------------------------------- */
@@ -474,7 +480,6 @@ function buildPayload(form) {
   const variant = form.dataset.formSource || 'unknown';
 
   return {
-    token: LEAD_RELAY_TOKEN,
     landing_page: LANDING_PAGE_ID,
     form_source: variant,
 
@@ -527,12 +532,12 @@ function newSubmissionId() {
 }
 
 /**
- * Posts the lead to the Nemroot-lead-relay Apps Script, which writes the
- * backup row to Google Sheets and emails Nemroot's intake address.
+ * Posts the lead to this site's own /api/lead function, which verifies
+ * Turnstile, delivers to the Nemroot Partner API, sends the Meta CAPI event
+ * and logs the row to the shared leads sheet.
  *
- * Content-Type is text/plain on purpose: it keeps this inside the CORS
- * "simple request" rules, so the browser skips the preflight OPTIONS call
- * that Apps Script web apps cannot answer. The body is still JSON.
+ * Same-origin, so there is no CORS preflight to work around and the body can
+ * be sent as plain application/json.
  *
  * Returns true only when the relay confirms it handled the lead.
  */
@@ -549,7 +554,7 @@ async function sendLead(payload) {
 
       const res = await fetch(LEAD_RELAY_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
         redirect: 'follow',
         signal: controller.signal,
