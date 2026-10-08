@@ -23,7 +23,9 @@
  *   LEAD_DEBUG            "true" to echo the normalized lead in the response
  */
 
-const PIXEL_FALLBACK = '28341044768871070';
+// Same pixel as the browser snippet in BaseLayout.astro. The two must match,
+// or the server's Lead event lands on a pixel the campaign never sees.
+const PIXEL_FALLBACK = '2302599970275699';
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -44,6 +46,38 @@ const digits = (v) => String(v || '').replace(/\D/g, '');
 function splitName(fullName) {
   const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
   return { first: parts[0] || '', last: parts.slice(1).join(' ') };
+}
+
+/**
+ * The page URL without its query string or hash. A tagged Meta ad URL runs to
+ * 500+ characters, which the Partner API rejected (VALIDATION_ERROR, Oct 8).
+ * Nothing is lost by trimming: the UTMs and click ids are already their own
+ * fields, the ad ids are read out by adIdsFromUrl(), and the sheet keeps the
+ * full URL.
+ */
+function cleanUrl(raw) {
+  try {
+    const u = new URL(raw);
+    return u.origin + u.pathname;
+  } catch (_) {
+    return String(raw || '').split(/[?#]/)[0].slice(0, 500);
+  }
+}
+
+/** Ad, ad set and campaign ids and the placement, from the ad's URL tags. */
+function adIdsFromUrl(raw) {
+  let p;
+  try {
+    p = new URL(raw).searchParams;
+  } catch (_) {
+    return { ad_id: '', ad_group_id: '', campaign_id: '', placement: '' };
+  }
+  return {
+    ad_id: p.get('fb_ad_id') || p.get('hsa_ad') || '',
+    ad_group_id: p.get('hsa_grp') || '',
+    campaign_id: p.get('utm_id') || p.get('hsa_cam') || '',
+    placement: p.get('utm_placement') || '',
+  };
 }
 
 function validate(body) {
@@ -173,8 +207,12 @@ function nemrootCustomFields(lead) {
     wbraid: lead.wbraid,
     fbclid: lead.fbclid,
     msclkid: lead.msclkid,
-    page_url: lead.page_url,
-    referrer: lead.referrer,
+    ad_id: lead.ad_id,
+    ad_group_id: lead.ad_group_id,
+    campaign_id: lead.campaign_id,
+    placement: lead.placement,
+    page_url: cleanUrl(lead.page_url),
+    referrer: cleanUrl(lead.referrer),
     submitted_at: lead.submitted_at,
   };
 
@@ -184,7 +222,8 @@ function nemrootCustomFields(lead) {
     const value = candidates[key];
     if (value === undefined || value === null || value === '') continue;
     if (n >= 25) break;
-    out[key] = String(value).slice(0, 1000);
+    // The API's per-value limit is undocumented; 500 is a safe ceiling.
+    out[key] = String(value).slice(0, 500);
     n++;
   }
   return out;
@@ -197,22 +236,24 @@ function buildNemrootLead(lead, env) {
     // Our own id for this submission, already a UUID. Doubles as the
     // idempotency key, so a retry can never create a second lead.
     externalId: lead.event_id,
-    email: lead.email,
     message: nemrootMessage(lead),
     customFields: nemrootCustomFields(lead),
     consent: {
       tcpa: !!lead.tcpa_consent,
       capturedAt: lead.submitted_at,
-      sourceUrl: lead.page_url,
+      sourceUrl: cleanUrl(lead.page_url) || 'https://' + RELAY_LANDING_PAGE + '/',
     },
   };
 
+  // The form has no email field. Leave the key out rather than send "".
+  if (lead.email) body.email = lead.email.slice(0, 254);
   if (lead.first_name) body.name = lead.first_name.slice(0, 200);
   if (lead.phone) body.phone = lead.phone.length === 10 ? '+1' + lead.phone : lead.phone;
   const campaignName = lead.utm_campaign || 'Nemroot ' + lead.landing_page;
   body.campaign = { campaignName: String(campaignName).slice(0, 200) };
-  const adId = lead.utm_content || lead.gclid || lead.fbclid;
-  if (adId) body.campaign.adId = String(adId).slice(0, 200);
+  // The real ad id from Meta's URL tags. utm_content is a creative number
+  // ("1"), and click ids are not ad ids, so neither is used here any more.
+  if (lead.ad_id) body.campaign.adId = String(lead.ad_id).slice(0, 200);
 
   return body;
 }
@@ -270,7 +311,10 @@ async function sendToNemroot(lead, env) {
         attempt: attempt,
         code: data.code,
         error: data.error,
-        details: data.details ? JSON.stringify(data.details).slice(0, 300) : undefined,
+        // Names the field that failed. Goes to the sheet and the alert email.
+        details: (function (d) {
+          return d ? JSON.stringify(d).slice(0, 500) : undefined;
+        })(data.details || data.errors || data.issues),
       };
 
       // A bad key, a bad customerId or a malformed field fails the same way
@@ -391,7 +435,8 @@ function buildRelayPayload(lead, nemroot, turnstile) {
           (nemroot.leadId ? ' — ' + nemroot.leadId : '') +
           (nemroot.channel ? ' (' + nemroot.channel + ')' : '')
         : nemroot.attempted
-          ? 'FAILED — ' + (nemroot.code || nemroot.status || '') + ' ' + (nemroot.error || '')
+          ? 'FAILED — ' + (nemroot.code || nemroot.status || '') + ' ' + (nemroot.error || '') +
+            (nemroot.details ? ' | ' + nemroot.details : '')
           : 'skipped — ' + (nemroot.reason || 'not configured'),
     },
 
@@ -444,17 +489,20 @@ async function sendToMetaCapi(lead, env, request) {
   if (!token) return { attempted: false, reason: 'META_CAPI_TOKEN not set' };
 
   const { first, last } = splitName(lead.full_name);
+  const phone = digits(lead.phone);
+  // Only fields the lead actually gave. A hash of "" matches nobody and
+  // counts against the event's match quality.
   const user_data = {
-    em: [await sha256(lead.email.trim().toLowerCase())],
-    ph: [await sha256('1' + digits(lead.phone))],
-    fn: [await sha256(first.toLowerCase())],
-    ln: [await sha256(last.toLowerCase())],
+    ph: [await sha256(phone.length === 10 ? '1' + phone : phone)],
     country: [await sha256('us')],
     client_ip_address: request.headers.get('CF-Connecting-IP') || undefined,
     client_user_agent: request.headers.get('User-Agent') || undefined,
     fbp: lead.fbp || undefined,
     fbc: lead.fbc || undefined,
   };
+  if (lead.email) user_data.em = [await sha256(lead.email)];
+  if (first) user_data.fn = [await sha256(first.toLowerCase())];
+  if (last) user_data.ln = [await sha256(last.toLowerCase())];
 
   const payload = {
     data: [
@@ -559,7 +607,12 @@ export async function onRequestPost({ request, env, waitUntil }) {
     fbclid: body.fbclid || '',
     msclkid: body.msclkid || '',
     fbp: body.fbp || '',
-    fbc: body.fbc || '',
+    // Meta's click cookie. Rebuilt from the click id when the browser had
+    // none, in the format Meta documents: fb.1.<ms timestamp>.<fbclid>.
+    fbc: body.fbc || (body.fbclid ? 'fb.1.' + Date.now() + '.' + body.fbclid : ''),
+
+    // Ad, ad set, campaign and placement, read from the ad's URL tags.
+    ...adIdsFromUrl(body.page_url),
 
     // The browser already made one, and it is the idempotency key the Partner
     // API deduplicates on. Keep it rather than minting a second.

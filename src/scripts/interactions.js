@@ -505,6 +505,11 @@ function buildPayload(form) {
     gclid: raw.gclid || '',
     fbclid: raw.fbclid || '',
 
+    // Meta's browser cookies, so the server-side Lead event can be matched
+    // to the ad click. _fbc is rebuilt from the click id when it is missing.
+    fbp: readCookie('_fbp'),
+    fbc: readCookie('_fbc') || (raw.fbclid ? `fb.1.${Date.now()}.${raw.fbclid}` : ''),
+
     page_url: raw.page_url || window.location.href,
     submitted_at: raw.timestamp || new Date().toISOString(),
     user_agent: navigator.userAgent,
@@ -513,6 +518,11 @@ function buildPayload(form) {
     turnstile_token: getTurnstileToken(form),
     turnstile_status: turnstileEnforced(form) ? 'verified' : 'unavailable',
   };
+}
+
+function readCookie(name) {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : '';
 }
 
 /**
