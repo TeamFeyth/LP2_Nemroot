@@ -35,6 +35,22 @@ import Footer from '../components/Footer.astro';
   </main>
 
   <Footer />
+
+  <!-- Meta Lead. Fires only right after a real submit (the form leaves the
+       lead id in sessionStorage), never on a refresh or a direct visit. The
+       eventID matches the server's Lead, so Meta counts the lead once. -->
+  <script is:inline>
+    (function () {
+      var id = null;
+      try {
+        id = sessionStorage.getItem('nemroot_lead_event');
+        sessionStorage.removeItem('nemroot_lead_event');
+      } catch (e) {}
+      if (id && typeof window.fbq === 'function') {
+        window.fbq('track', 'Lead', {}, { eventID: id });
+      }
+    })();
+  </script>
 </BaseLayout>
 
 <style>

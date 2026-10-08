@@ -21,7 +21,8 @@
  *   META_PIXEL_ID         defaults to the campaign pixel
  *   META_CAPI_TOKEN       Meta system-user access token         (pending)
  *   META_SERVER_LEAD      "on" to send the server-side Lead event (default off)
- *   LEAD_DEBUG           "true" to echo the normalized lead in the response
+ *   LEAD_LOG              service binding to the nemroot-lead-logs Worker
+ *   LEAD_DEBUG          "true" to echo the normalized lead in the response
  */
 
 // Same pixel as the browser snippet in BaseLayout.astro. The two must match,
@@ -78,6 +79,36 @@ function adIdsFromUrl(raw) {
     ad_group_id: p.get('hsa_grp') || '',
     campaign_id: p.get('utm_id') || p.get('hsa_cam') || '',
     placement: p.get('utm_placement') || '',
+  };
+}
+
+/**
+ * One log record per request outcome. Pages Functions do not keep logs, so
+ * each record also goes to the nemroot-lead-logs Worker (service binding
+ * LEAD_LOG), which has Workers Logs turned on and keeps them. Never throws,
+ * never delays the visitor, and does nothing extra when the binding is absent.
+ */
+function logEvent(env, record) {
+  const entry = Object.assign({ site: RELAY_LANDING_PAGE, at: new Date().toISOString() }, record);
+  console.log(JSON.stringify(entry));
+  if (!env.LEAD_LOG || typeof env.LEAD_LOG.fetch !== 'function') return Promise.resolve();
+  return env.LEAD_LOG.fetch('https://lead-log/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(entry),
+  }).then(
+    () => {},
+    () => {}
+  );
+}
+
+/** Who a blocked or failed submission was, so a real person can be followed up. */
+function contactOf(body) {
+  return {
+    form: String(body.form_source || 'unknown'),
+    first_name: String(body.first_name || '').slice(0, 100),
+    phone: String(body.phone || '').slice(0, 30),
+    company: String(body.dealership_name || '').slice(0, 200),
   };
 }
 
@@ -485,10 +516,10 @@ async function sendToBackup(lead, env) {
 }
 
 async function sendToMetaCapi(lead, env, request) {
-  // Off by default. The pixel's Event Setup Tool rule already fires Lead on
-  // /thank-you/ and Meta mirrors it server-side; this event carries a
-  // different id, so Meta cannot de-duplicate it and every lead counts twice.
-  // Turn on only once the browser Lead sends eventID = lead.event_id.
+  // Off unless META_SERVER_LEAD is "on". /thank-you fires the browser Lead
+  // with eventID = lead.event_id, the same id sent here, so Meta pairs them.
+  // Only turn this on while no other browser Lead fires (the Event Setup
+  // Tool's thank-you rules must stay off), or every lead counts twice.
   if (env.META_SERVER_LEAD !== 'on') return { attempted: false, reason: 'META_SERVER_LEAD off' };
 
   const token = env.META_CAPI_TOKEN;
@@ -556,27 +587,51 @@ async function sendToMetaCapi(lead, env, request) {
 }
 
 export async function onRequestPost({ request, env, waitUntil }) {
+  // Log writes for early exits run after the response, like the deliveries.
+  const later = (p) => (typeof waitUntil === 'function' ? waitUntil(p) : p);
+
   let body;
   try {
     body = await request.json();
   } catch (_) {
+    later(logEvent(env, { event: 'rejected', reason: 'invalid_json', level: 'warn' }));
     return json({ ok: false, error: 'invalid_json' }, 400);
   }
 
   // Honeypot: a filled hidden field means a bot. Answer 200 so it moves on.
-  if (body.hp) return json({ ok: true, ignored: true });
+  if (body.hp) {
+    later(logEvent(env, { event: 'rejected', reason: 'honeypot', form: body.form_source || 'unknown' }));
+    return json({ ok: true, ignored: true });
+  }
 
   const turnstile = await verifyTurnstile(body.turnstile_token, env, request);
   if (turnstile.checked && !turnstile.ok) {
+    // Name and phone are kept in the log so a real person who was blocked
+    // (the visitor sees the error message and the phone number) can still
+    // be found and followed up by hand.
+    const blocked = Object.assign(
+      {
+        reason: 'bot_check',
+        codes: turnstile.codes,
+        client_check: body.turnstile_status || '',
+        page_url: cleanUrl(body.page_url),
+        user_agent: String(body.user_agent || request.headers.get('User-Agent') || '').slice(0, 300),
+      },
+      contactOf(body)
+    );
     if (env.TURNSTILE_ENFORCE !== 'false') {
+      later(logEvent(env, Object.assign({ event: 'blocked', level: 'warn' }, blocked)));
       return json({ ok: false, error: 'failed_bot_check' }, 403);
     }
     // Monitor mode: log what would have been blocked, but let the lead through.
-    console.log('NEMROOT_TURNSTILE_WOULD_BLOCK', JSON.stringify(turnstile.codes));
+    later(logEvent(env, Object.assign({ event: 'bot_check_would_block' }, blocked)));
   }
 
   const errors = validate(body);
-  if (errors.length) return json({ ok: false, error: 'validation', fields: errors }, 422);
+  if (errors.length) {
+    later(logEvent(env, Object.assign({ event: 'rejected', reason: 'validation', fields: errors, level: 'warn' }, contactOf(body))));
+    return json({ ok: false, error: 'validation', fields: errors }, 422);
+  }
 
   const { first, last } = splitName(body.full_name);
 
@@ -667,27 +722,29 @@ export async function onRequestPost({ request, env, waitUntil }) {
     const backup = results[1];
     const capi = results[2];
 
-    // Cloudflare Pages > Deployment > Functions > Real-time logs.
-    if (nemroot.attempted && !nemroot.ok) {
-      console.log('NEMROOT_NEMROOT_FAILED', JSON.stringify({ lead: lead, nemroot: nemroot }));
-    }
+    // One record per lead: where it went and what each destination said.
+    // Contact details are added only when the CRM did not take the lead, so
+    // it can be entered by hand.
+    const record = {
+      event: 'lead',
+      level: (nemroot.attempted && !nemroot.ok) || (relay.attempted && !relay.ok) ? 'error' : 'info',
+      lead_id: lead.event_id,
+      form: lead.form_id,
+      channel: nemrootChannel(lead),
+      campaign: lead.utm_campaign,
+      ad_id: lead.ad_id,
+      bot_check: turnstile.checked ? (turnstile.ok ? 'verified' : 'failed') : 'skipped',
+      crm: nemroot,
+      sheet: relay,
+      legacy_sheet: crm,
+      backup: backup,
+      meta: capi,
+    };
+    if (!nemroot.ok) Object.assign(record, contactOf(body));
 
-    // Only truly lost if neither destination took it.
-    if (!nemroot.ok && !crm.ok) {
-      console.log('NEMROOT_LEAD_UNDELIVERED', JSON.stringify({ lead, nemroot, crm, backup }));
-    } else {
-      console.log(
-        'NEMROOT_LEAD',
-        lead.form_id,
-        lead.email,
-        lead.company || '-',
-        'nemroot:' + (nemroot.ok ? nemroot.leadId || 'ok' : nemroot.reason || 'failed'),
-        'relay:' + (relay.ok ? relay.tab || 'ok' : relay.reason || relay.error || 'failed'),
-        'sheet:' + (crm.ok ? 'ok' : crm.reason || 'failed'),
-        'capi:' + (capi.ok ? 'ok' : capi.reason || 'failed')
-      );
-    }
-    return { nemroot: nemroot, relay: relay, crm: crm, backup: backup, capi: capi };
+    return logEvent(env, record).then(function () {
+      return { nemroot: nemroot, relay: relay, crm: crm, backup: backup, capi: capi };
+    });
   });
 
   // Debug mode, and local dev where waitUntil does not exist, wait for the
@@ -713,6 +770,13 @@ export async function onRequestPost({ request, env, waitUntil }) {
   });
 }
 
-export async function onRequestGet() {
+export async function onRequestGet({ request, env, waitUntil }) {
+  // Also a safe way to confirm logging works: a GET never touches a lead.
+  const p = logEvent(env, {
+    event: 'probe',
+    method: 'GET',
+    user_agent: String(request.headers.get('User-Agent') || '').slice(0, 300),
+  });
+  if (typeof waitUntil === 'function') waitUntil(p);
   return json({ ok: false, error: 'method_not_allowed' }, 405);
 }

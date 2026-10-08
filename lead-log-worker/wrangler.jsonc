@@ -1,0 +1,13 @@
+// Deployed to the Team@feythmarketing.com Cloudflare account. Bound to the
+// lp1-nemroot and lp2-nemroot Pages projects as LEAD_LOG (Settings > Bindings).
+{
+  "name": "nemroot-lead-logs",
+  "main": "index.js",
+  "compatibility_date": "2026-09-17",
+  "workers_dev": false,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": { "enabled": true, "invocation_logs": false }
+  }
+}

@@ -431,7 +431,8 @@ async function handleValidSubmit(form) {
     submitBtn.textContent = 'Sending...';
   }
 
-  const delivered = await sendLead(buildPayload(form));
+  const payload = buildPayload(form);
+  const delivered = await sendLead(payload);
 
   if (!delivered) {
     // The lead did not reach the relay. Keep the form filled in so the
@@ -451,10 +452,13 @@ async function handleValidSubmit(form) {
     return;
   }
 
-  // No Lead event is fired here on purpose. The redirect below starts
-  // immediately, which can cancel the pixel's request, and firing here as
-  // well as on /thank-you would count the same conversion twice. The Lead
-  // conversion is tracked on the /thank-you page view instead.
+  // No Lead event is fired here on purpose: the redirect below starts
+  // immediately and can cancel the pixel's request. The id is handed to
+  // /thank-you, which fires Lead with it as eventID. The server sends its own
+  // Lead with the same id, so Meta pairs the two and counts the lead once.
+  try {
+    sessionStorage.setItem('nemroot_lead_event', payload.external_id);
+  } catch { /* private mode etc.: the server's Lead still counts */ }
 
   // Every successful submit lands on the thank-you page, which is where the
   // lead conversion is tracked. The URL is used exactly as configured —
