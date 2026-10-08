@@ -20,7 +20,8 @@
  *   LEAD_BACKUP_WEBHOOK   n8n / Zapier catch URL                (optional)
  *   META_PIXEL_ID         defaults to the campaign pixel
  *   META_CAPI_TOKEN       Meta system-user access token         (pending)
- *   LEAD_DEBUG            "true" to echo the normalized lead in the response
+ *   META_SERVER_LEAD      "on" to send the server-side Lead event (default off)
+ *   LEAD_DEBUG           "true" to echo the normalized lead in the response
  */
 
 // Same pixel as the browser snippet in BaseLayout.astro. The two must match,
@@ -484,6 +485,12 @@ async function sendToBackup(lead, env) {
 }
 
 async function sendToMetaCapi(lead, env, request) {
+  // Off by default. The pixel's Event Setup Tool rule already fires Lead on
+  // /thank-you/ and Meta mirrors it server-side; this event carries a
+  // different id, so Meta cannot de-duplicate it and every lead counts twice.
+  // Turn on only once the browser Lead sends eventID = lead.event_id.
+  if (env.META_SERVER_LEAD !== 'on') return { attempted: false, reason: 'META_SERVER_LEAD off' };
+
   const token = env.META_CAPI_TOKEN;
   const pixelId = env.META_PIXEL_ID || PIXEL_FALLBACK;
   if (!token) return { attempted: false, reason: 'META_CAPI_TOKEN not set' };
