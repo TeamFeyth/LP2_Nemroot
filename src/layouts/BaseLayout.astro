@@ -92,9 +92,6 @@ const { title, description, noindex = false } = Astro.props;
        src/scripts/interactions.js. -->
   <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit" async defer></script>
 
-  <!-- CallRail Dynamic Number Insertion -->
-  <script is:inline type="text/javascript" src="//cdn.callrail.com/companies/514974372/23e9803bf1d2dc4300ce/12/swap.js"></script>
-  <!-- End CallRail -->
 </head>
 <body>
   <!-- Google Tag Manager (noscript) -->
@@ -102,5 +99,9 @@ const { title, description, noindex = false } = Astro.props;
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
   <slot />
+
+  <!-- CallRail Dynamic Number Insertion: immediately before </body>, per CallRail's install guide -->
+  <script is:inline type="text/javascript" src="//cdn.callrail.com/companies/514974372/23e9803bf1d2dc4300ce/12/swap.js"></script>
+  <!-- End CallRail -->
 </body>
 </html>
