@@ -512,6 +512,9 @@ function buildPayload(form) {
     // Meta's browser cookies, so the server-side Lead event can be matched
     // to the ad click. _fbc is rebuilt from the click id when it is missing.
     fbp: readCookie('_fbp'),
+    // Same visitor id the pixel and /api/pageview send, so Meta links the
+    // visit to the lead.
+    visitor_id: window.__lpVid || '',
     fbc: readCookie('_fbc') || (raw.fbclid ? `fb.1.${Date.now()}.${raw.fbclid}` : ''),
 
     page_url: raw.page_url || window.location.href,

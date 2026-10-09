@@ -45,6 +45,20 @@ async function sha256(value) {
 
 const digits = (v) => String(v || '').replace(/\D/g, '');
 
+/** Meta's normalisation for location keys, hashed. Missing values are left out. */
+async function geoUserData(cf) {
+  const out = {};
+  if (!cf) return out;
+  const city = String(cf.city || '').toLowerCase().replace(/[^a-z]/g, '');
+  const state = String(cf.regionCode || '').toLowerCase().replace(/[^a-z]/g, '');
+  let zip = String(cf.postalCode || '').toLowerCase().replace(/\s/g, '');
+  if (String(cf.country || '').toLowerCase() === 'us') zip = zip.slice(0, 5);
+  if (city) out.ct = [await sha256(city)];
+  if (state && state.length === 2) out.st = [await sha256(state)];
+  if (zip) out.zp = [await sha256(zip)];
+  return out;
+}
+
 function splitName(fullName) {
   const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
   return { first: parts[0] || '', last: parts.slice(1).join(' ') };
@@ -537,7 +551,9 @@ async function sendToMetaCapi(lead, env, request) {
     client_user_agent: request.headers.get('User-Agent') || undefined,
     fbp: lead.fbp || undefined,
     fbc: lead.fbc || undefined,
+    ...(await geoUserData(request.cf)),
   };
+  if (lead.visitor_id) user_data.external_id = [lead.visitor_id];
   if (lead.email) user_data.em = [await sha256(lead.email)];
   if (first) user_data.fn = [await sha256(first.toLowerCase())];
   if (last) user_data.ln = [await sha256(last.toLowerCase())];
@@ -679,6 +695,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
     // The browser already made one, and it is the idempotency key the Partner
     // API deduplicates on. Keep it rather than minting a second.
     event_id: body.external_id || body.event_id || crypto.randomUUID(),
+    visitor_id: /^[a-f0-9]{64}$/.test(String(body.visitor_id || '')) ? body.visitor_id : '',
     submitted_at: body.submitted_at || new Date().toISOString(),
     ip: request.headers.get('CF-Connecting-IP') || '',
     user_agent: body.user_agent || request.headers.get('User-Agent') || '',

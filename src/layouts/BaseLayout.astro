@@ -66,8 +66,60 @@ const { title, description, noindex = false } = Astro.props;
   t.src=v;s=b.getElementsByTagName(e)[0];
   s.parentNode.insertBefore(t,s)}(window, document,'script',
   'https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', '2302599970275699');
-  fbq('track', 'PageView');
+  // One visitor id (32 random bytes, hex) kept for two years, and one id per
+  // page view. The pixel and /api/pageview send the same ids, so Meta pairs
+  // the browser and server PageView and counts the view once.
+  var lpVid = (function () {
+    try {
+      var m = document.cookie.match(/(?:^|; )lp_vid=([a-f0-9]{64})/);
+      if (m) return m[1];
+      var b = new Uint8Array(32);
+      crypto.getRandomValues(b);
+      var v = Array.prototype.map.call(b, function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+      document.cookie = 'lp_vid=' + v + '; Max-Age=63072000; Path=/; SameSite=Lax; Secure';
+      return v;
+    } catch (e) {
+      return '';
+    }
+  })();
+  window.__lpVid = lpVid;
+  var lpPvId = window.crypto && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+  fbq('init', '2302599970275699', lpVid ? { external_id: lpVid } : {});
+  fbq('track', 'PageView', {}, { eventID: lpPvId });
+  (function () {
+    var sent = false;
+    function ck(n) {
+      var m = document.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : '';
+    }
+    function send() {
+      if (sent) return;
+      sent = true;
+      var fbclid = new URLSearchParams(location.search).get('fbclid');
+      var body = JSON.stringify({
+        event_id: lpPvId,
+        page_url: location.href,
+        visitor_id: lpVid,
+        fbp: ck('_fbp'),
+        fbc: ck('_fbc') || (fbclid ? 'fb.1.' + Date.now() + '.' + fbclid : ''),
+      });
+      try {
+        if (navigator.sendBeacon && navigator.sendBeacon('/api/pageview', new Blob([body], { type: 'text/plain' }))) return;
+      } catch (e) {}
+      try {
+        fetch('/api/pageview', { method: 'POST', body: body, keepalive: true, headers: { 'Content-Type': 'text/plain' } });
+      } catch (e) {}
+    }
+    // _fbp is written once fbevents.js loads; give it up to 3 seconds.
+    var tries = 0;
+    (function wait() {
+      if (ck('_fbp') || ++tries > 15) return send();
+      setTimeout(wait, 200);
+    })();
+    addEventListener('pagehide', send);
+  })();
   </script>
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=2302599970275699&ev=PageView&noscript=1"
